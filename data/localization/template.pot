@@ -1,0 +1,62 @@
+# ========== mods\Buffs\data\scripts\entity\buffs.lua ==========
+#: mods\Buffs\data\scripts\entity\buffs.lua:
+msgid "Material Scanner Range"
+msgstr ""
+
+#: mods\Buffs\data\scripts\entity\buffs.lua:
+msgid "Time Until Recharge (Depletion)"
+msgstr ""
+
+#: mods\Buffs\data\scripts\entity\buffs.lua:
+msgid "Pilots Per Fighter"
+msgstr ""
+
+#: mods\Buffs\data\scripts\entity\buffs.lua:
+msgid "Miners Per Turret"
+msgstr ""
+
+#: mods\Buffs\data\scripts\entity\buffs.lua:
+msgid "Gunners Per Turret"
+msgstr ""
+
+#: mods\Buffs\data\scripts\entity\buffs.lua:
+msgid "Mechanics Per Turret"
+msgstr ""
+
+#: mods\Buffs\data\scripts\entity\buffs.lua:
+msgid "Security"
+msgstr ""
+
+#: mods\Buffs\data\scripts\entity\buffs.lua:
+msgid "Boarders"
+msgstr ""
+
+#: mods\Buffs\data\scripts\entity\buffs.lua:
+msgid "Sergeants"
+msgstr ""
+
+#: mods\Buffs\data\scripts\entity\buffs.lua:
+msgid "Lieutenants"
+msgstr ""
+
+#: mods\Buffs\data\scripts\entity\buffs.lua:
+msgid "Commanders"
+msgstr ""
+
+#: mods\Buffs\data\scripts\entity\buffs.lua:
+msgid "Generals"
+msgstr ""
+
+#: mods\Buffs\data\scripts\entity\buffs.lua:
+msgid "Captains"
+msgstr ""
+
+#: mods\Buffs\data\scripts\entity\buffs.lua:
+msgid "%ss"
+msgstr ""
+
+#: mods\Buffs\data\scripts\entity\buffs.lua:
+msgid "Permanent"
+msgstr ""
+
+
