@@ -62,10 +62,17 @@ msgstr ""
 
 # ========== mods\Buffs\data\scripts\lib\BuffsHelper.lua ==========
 #: mods\Buffs\data\scripts\lib\BuffsHelper.lua:
-msgid "every %is"
+msgid "Cargo Destruction"
 msgstr ""
 
 #: mods\Buffs\data\scripts\lib\BuffsHelper.lua:
 msgid "${amount}/s"
 msgstr ""
+
+#: mods\Buffs\data\scripts\lib\BuffsHelper.lua:
+msgid "Crew Dies"
+msgstr ""
+
+
+
 

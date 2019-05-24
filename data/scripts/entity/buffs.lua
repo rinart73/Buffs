@@ -17,7 +17,7 @@ local buffDescriptions = include("BuffsIntegration")
 
 local configOptions = {
   _version = {default = "0.1", comment = "Config version. Don't touch."},
-  LogLevel = {default = 4, min = 0, max = 4, format = "floor", comment = "0 - Disable, 1 - Errors, 2 - Warnings, 3 - Info, 4 - Debug."},
+  LogLevel = {default = 2, min = 0, max = 4, format = "floor", comment = "0 - Disable, 1 - Errors, 2 - Warnings, 3 - Info, 4 - Debug."},
 }
 local config, isModified = Azimuth.loadConfig("Buffs", configOptions)
 if isModified then
@@ -149,17 +149,7 @@ function Buffs.getUpdateInterval()
 end
 
 function Buffs.initialize()
-    --[[-- translate descriptions and split them into lines
-    local desc
-    for k, v in pairs(buffDescriptions) do
-        desc = v
-        if type(v) ~= "table" then
-            desc = desc%_t
-            buffDescriptions[k] = desc:split("\n")
-        end
-    end]]
-
-    Player():registerCallback("onPreRenderHud", "onRenderHud")
+    Player():registerCallback("onPostRenderHud", "onRenderHud")
     Entity():registerCallback("onCraftSeatEntered", "onCraftSeatEntered")
 
     if Player().craftIndex == Entity().index then
@@ -415,7 +405,7 @@ else -- onServer
 
 local configOptions = {
   _version = {default = "0.1", comment = "Config version. Don't touch."},
-  LogLevel = {default = 4, min = 0, max = 4, format = "floor", comment = "0 - Disable, 1 - Errors, 2 - Warnings, 3 - Info, 4 - Debug."},
+  LogLevel = {default = 2, min = 0, max = 4, format = "floor", comment = "0 - Disable, 1 - Errors, 2 - Warnings, 3 - Info, 4 - Debug."},
   UpdateInterval = { default = 1, min = 0.1, comment = "How precise system upgrade decay is (smaller = more precise)." }
 }
 local config, isModified = Azimuth.loadConfig("Buffs", configOptions)

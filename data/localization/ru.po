@@ -62,12 +62,17 @@ msgstr "Постоянный"
 
 # ========== mods\Buffs\data\scripts\lib\BuffsHelper.lua ==========
 #: mods\Buffs\data\scripts\lib\BuffsHelper.lua:
-msgid "every %is"
-msgstr "каждые %iс"
+msgid "Cargo Destruction"
+msgstr "Уничтожение грузов"
 
 #: mods\Buffs\data\scripts\lib\BuffsHelper.lua:
 msgid "${amount}/s"
 msgstr "${amount}/с"
+
+#: mods\Buffs\data\scripts\lib\BuffsHelper.lua:
+msgid "Crew Dies"
+msgstr "Экипаж умирает"
+
 
 
 
