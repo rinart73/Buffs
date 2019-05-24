@@ -4,7 +4,6 @@ include("utility")
 include("stringutility")
 local Azimuth = include("azimuthlib-basic")
 local BuffsHelper = include("BuffsHelper")
-local buffDescriptions = include("BuffsIntegration")
 
 -- namespace Buffs
 Buffs = {}
@@ -12,6 +11,19 @@ Buffs = {}
 local buffPrefixes = {"BM_", "M_", "MB_", "AB_", "_B"}
 
 if onClient() then
+
+
+local buffDescriptions = include("BuffsIntegration")
+
+local configOptions = {
+  _version = {default = "0.1", comment = "Config version. Don't touch."},
+  LogLevel = {default = 4, min = 0, max = 4, format = "floor", comment = "0 - Disable, 1 - Errors, 2 - Warnings, 3 - Info, 4 - Debug."},
+}
+local config, isModified = Azimuth.loadConfig("Buffs", configOptions)
+if isModified then
+    Azimuth.saveConfig("Buffs", config, configOptions)
+end
+local Log = Azimuth.logs("Buffs", config.LogLevel)
 
 
 local stats = {
@@ -96,9 +108,13 @@ local statNames = {
   Generals = "Generals"%_t,
   Captains = "Captains"%_t
 }
+local customEffects = {}
+for _, v in pairs(BuffsHelper.Custom) do
+    customEffects[v.script] = v
+end
 local buffs = {}
+local buffsCount = 0
 local hoveredBuffTooltip, prevHoveredName
---local tooltipUpdateTImer = 1
 local distanceString = "+${distance} km"%_t
 distanceString = distanceString:sub(2)
 
@@ -133,7 +149,7 @@ function Buffs.getUpdateInterval()
 end
 
 function Buffs.initialize()
-    -- translate descriptions and split them into lines
+    --[[-- translate descriptions and split them into lines
     local desc
     for k, v in pairs(buffDescriptions) do
         desc = v
@@ -141,7 +157,7 @@ function Buffs.initialize()
             desc = desc%_t
             buffDescriptions[k] = desc:split("\n")
         end
-    end
+    end]]
 
     Player():registerCallback("onPreRenderHud", "onRenderHud")
     Entity():registerCallback("onCraftSeatEntered", "onCraftSeatEntered")
@@ -153,6 +169,7 @@ end
 
 function Buffs.update(timePassed)
     if Player().craftIndex ~= Entity().index then return end
+    if buffsCount == 0 then return end
     -- decay buffs
     for name, buff in pairs(buffs) do
         if buff.duration ~= -1 then
@@ -165,32 +182,47 @@ function Buffs.update(timePassed)
     local mousePos = Mouse().position
     local res = getResolution()
     local rx, ry
-    local i = 0
-    local found = false
-    local value
+    local i = 0 -- buff number, affects position
+    local found = false -- if at least one buff was hovered
+    local white = ColorRGB(1, 1, 1)
+    local red = ColorRGB(1, 0, 0)
+    local green = ColorRGB(0, 1, 0)
+    local customEffect
     for name, buff in pairs(buffs) do
         rx = res.x / 2 + 270 + math.floor(i / 2) * 30
         ry = res.y - 65 + (i % 2) * 30
+
         if mousePos.x >= rx and mousePos.x <= rx + 25 and mousePos.y >= ry and mousePos.y <= ry + 25 then
             found = true
             if buff.redraw == 1 or prevHoveredName ~= name then
                 prevHoveredName = name
+
                 local tooltip = Tooltip()
                 local line = TooltipLine(20, 15)
                 line.ltext = buff.name
                 if buff.type == 5 then
-                    line.lcolor = ColorRGB(1, 1, 1)
+                    line.lcolor = buff.color and buff.color or white
                 else
-                    line.lcolor = buff.isDebuff and ColorRGB(1, 0, 0) or ColorRGB(0, 1, 0)
+                    line.lcolor = buff.isDebuff and red or green
                 end
                 line.rtext = buff.duration ~= -1 and string.format("%ss"%_t, math.floor(buff.duration)) or "Permanent"%_t
                 tooltip:addLine(line)
                 -- display bonuses
-                if buff.type == 5 then -- multiple effects
+                if buff.type == 5 then -- complex buff
                     for _, effect in ipairs(buff.effects) do
                         line = TooltipLine(16, 13)
-                        line.ltext = statNames[stats[effect.stat+1]]
-                        line.rtext = getBonusStatString(effect.type, effect.stat, effect.value)
+                        if effect.script then -- custom effect
+                            customEffect = customEffects[effect.script]
+                            if customEffect then
+                                line.ltext = customEffect.statName
+                                if customEffect.statFunc then
+                                    line.rtext = customEffect.statFunc(unpack(effect.args))
+                                end
+                            end
+                        else
+                            line.ltext = statNames[stats[effect.stat+1]]
+                            line.rtext = getBonusStatString(effect.type, effect.stat, effect.value)
+                        end
                         tooltip:addLine(line)
                     end
                 else
@@ -221,51 +253,56 @@ function Buffs.update(timePassed)
 end
 
 function Buffs.receiveData(_buffs)
+    Log.Debug("receiveData: %s", Log.isDebug and Azimuth.serialize(_buffs) or '')
+    buffsCount = 0
     buffs = _buffs
     for _, buff in pairs(buffs) do
+        buffsCount = buffsCount + 1
         -- custom color
-        if type(buff.color) == "number" then
+        if buff.color then
             buff.color = ColorInt(buff.color)
         else
             buff.color = nil
+        end
+        if buff.lowColor then
+            buff.lowColor = ColorInt(buff.lowColor)
+        else
+            buff.lowColor = nil
         end
         -- icon
         if buff.type == 5 then
             buff.icon = "data/textures/icons/buffs/" .. (buff.icon and buff.icon or "Buff") .. ".png"
         else
             buff.icon = "data/textures/icons/buffs/" .. (buff.icon and buff.icon or stats[buff.stat+1]) .. ".png"
-        end
-        -- check if it's a debuff
-        if buff.stat == StatsBonuses.HyperspaceCooldown
-          or buff.stat == StatsBonuses.HyperspaceRechargeEnergy
-          or buff.stat == StatsBonuses.ShieldTimeUntilRechargeAfterHit
-          or buff.stat == StatsBonuses.ShieldTimeUntilRechargeAfterDepletion
-          or buff.stat == StatsBonuses.PilotsPerFighter
-          or buff.stat == StatsBonuses.MinersPerTurret
-          or buff.stat == StatsBonuses.GunnersPerTurret
-          or buff.stat == StatsBonuses.MechanicsPerTurret then
-            if buff.type == 2 then
-                buff.isDebuff = buff.value > 1
-            elseif buff.type ~= 5 then
-                buff.isDebuff = buff.value > 0
-            end
-        else
-            if buff.type == 2 then
-                buff.isDebuff = buff.value < 1
-            elseif buff.type ~= 5 then
-                buff.isDebuff = buff.value < 0
+            -- check if it's a debuff, only simple buffs can be detected as positive/negative
+            if buff.stat == StatsBonuses.HyperspaceCooldown
+              or buff.stat == StatsBonuses.HyperspaceRechargeEnergy
+              or buff.stat == StatsBonuses.ShieldTimeUntilRechargeAfterHit
+              or buff.stat == StatsBonuses.ShieldTimeUntilRechargeAfterDepletion
+              or buff.stat == StatsBonuses.PilotsPerFighter
+              or buff.stat == StatsBonuses.MinersPerTurret
+              or buff.stat == StatsBonuses.GunnersPerTurret
+              or buff.stat == StatsBonuses.MechanicsPerTurret then
+                if buff.type == 2 then
+                    buff.isDebuff = buff.value > 1
+                else
+                    buff.isDebuff = buff.value > 0
+                end
+            else
+                if buff.type == 2 then
+                    buff.isDebuff = buff.value < 1
+                else
+                    buff.isDebuff = buff.value < 0
+                end
             end
         end
         -- description
         if not buff.desc then
             buff.desc = buffDescriptions[buff.name]
-            if buff.descArgs then
-                for k, v in pairs(buff.desc) do
-                    buff.desc[k] = v % buff.descArgs
-                end
-            end
         else
             buff.desc = buff.desc%_t
+        end
+        if buff.desc then
             if buff.descArgs then
                 buff.desc = buff.desc % buff.descArgs
             end
@@ -279,6 +316,8 @@ end
 -- CALLBACKS --
 function Buffs.onRenderHud()
     if Player().craftIndex ~= Entity().index then return end
+    if buffsCount == 0 then return end
+
     local renderer = UIRenderer()
     local res = getResolution()
     local i = 0
@@ -296,7 +335,12 @@ function Buffs.onRenderHud()
         rx = res.x / 2 + 270 + math.floor(i / 2) * 30
         if rx + 35 > res.x then break end -- can't draw more
         if buff.color then
-            renderer:renderPixelIcon(vec2(rx, res.y - 65 + (i % 2) * 30), buff.color, buff.icon)
+            if buff.lowColor then -- gradient
+                c = lerp(buff.duration, 5, 60, vec3(buff.lowColor.r, buff.lowColor.g, buff.lowColor.b), vec3(buff.color.r, buff.color.g, buff.color.b))
+                renderer:renderPixelIcon(vec2(rx, res.y - 65 + (i % 2) * 30), ColorRGB(c.x, c.y, c.z), buff.icon)
+            else
+                renderer:renderPixelIcon(vec2(rx, res.y - 65 + (i % 2) * 30), buff.color, buff.icon)
+            end
         else
             if buff.type == 5 then
                 if buff.duration == -1 then
@@ -370,12 +414,15 @@ else -- onServer
 
 
 local configOptions = {
-  UpdateInterval = { default = 1, min = 0.1, comment = "How precise system upgrade decay is (less is more)." }
+  _version = {default = "0.1", comment = "Config version. Don't touch."},
+  LogLevel = {default = 4, min = 0, max = 4, format = "floor", comment = "0 - Disable, 1 - Errors, 2 - Warnings, 3 - Info, 4 - Debug."},
+  UpdateInterval = { default = 1, min = 0.1, comment = "How precise system upgrade decay is (smaller = more precise)." }
 }
 local config, isModified = Azimuth.loadConfig("Buffs", configOptions)
 if isModified then
     Azimuth.saveConfig("Buffs", config, configOptions)
 end
+local Log = Azimuth.logs("Buffs", config.LogLevel)
 
 local data = {
   nextKey = 10000,
@@ -383,26 +430,34 @@ local data = {
   buffs = {}
 }
 local pending = {} -- functions that modders tried to call before `restore`
-local isReady
+local isReady -- immediately true if script was just added, otherwise false until `restore` function
 
-local function getFreeKey(amount)
+local function getFreeKey(amount) -- Find available keys for stat bonuses
+    -- single key
     if not amount then
-        if #data.freeKeys > 0 then
-            return table.remove(data.freeKeys, 1)
+        local key
+        if #data.freeKeys > 0 then -- try to reuse old keys
+            local length = #data.freeKeys
+            key = data.freeKeys[length]
+            data.freeKeys[length] = nil
+            return key
         end
-        local key = data.nextKey
+        key = data.nextKey
         if key == 11000 then return nil end -- ran out of keys
         data.nextKey = data.nextKey + 1
         return key
     end
     -- multiple keys
-    local available = #data.freeKeys + (11000 - data.nextKey)
+    local freeLen = #data.freeKeys
+    local available = freeLen + (11000 - data.nextKey)
     if amount > available then return nil end -- ran out of keys
     local keys = {}
-    local imax = math.min(#data.freeKeys, amount)
-    amount = amount - imax
-    for i = 1, imax do
-        keys[#keys+1] = table.remove(data.freeKeys, 1)
+
+    local maxFree = math.min(freeLen, amount)
+    amount = amount - maxFree
+    for i = freeLen, 1 + (freeLen - maxFree), -1 do -- try to reuse old keys
+        keys[#keys+1] = data.freeKeys[i]
+        data.freeKeys[i] = nil
     end
     for i = 1, amount do
         keys[#keys+1] = data.nextKey
@@ -417,11 +472,18 @@ end
 
 function Buffs.initialize()
     local entity = Entity()
+    -- if script was just added, it will not have 
     isReady = entity:getValue("Buffs") == nil
     if isReady then
         entity:setValue("Buffs", true)
     end
     Sector():registerCallback("onRestoredFromDisk", "onRestoredFromDisk")
+end
+
+function Buffs.onRemove()
+    Log.Info("'%s': onRemove fired for some reason", Entity().index.string)
+    -- in case something happens and script will be removed, reset 'Buffs'
+    Entity():setValue("Buffs")
 end
 
 function Buffs.update(timePassed)
@@ -485,7 +547,7 @@ function Buffs.onRestoredFromDisk(timePassed)
 end
 
 -- API --
--- BuffsHelper.addBuff(name, effects [, duration [, applyMode [, isAbsoluteDecay [, icon [, description [, color]]]]]])
+-- BuffsHelper.addBuff(name, effects [, duration [, applyMode [, isAbsoluteDecay [, icon [, description [, color [, lowDurationColor]]]]]]])
 --[[ Allows to add multiple bonuses within one buff/debuff.
 Arguments:
 * name - Buff name, can't contain '.'
@@ -508,7 +570,8 @@ Arguments:
 * icon - Icon name. Icon should be in the "data/textures/icons/buffs/" folder.
 * description - Buff description, long descriptions should be separated into lines with '\n'. I advise to register your descriptions in the "BuffsIntegration.lua" instead.
 * descArgs - Table of arguments for description.
-* color - Custom icon color, should be an int (example: 0xff0000ff - blue).
+* color - Custom icon and title color, should be an int (example: 0xff0000ff - blue).
+* lowDurationColor - Custom color that will be used in a gradient with previous color when there are < 60 seconds left.
 Returns:
 * true - Added/updated buff
 * false - if applyMode == 1, buff already exists. If applyMode == 4 or 5, buff weren't updated because it doesn't exist
@@ -522,18 +585,18 @@ Buffs.addBuff("Sturdy Build", {
   { type = BuffsHelper.Type.BaseMultiplier, stat = StatsBonuses.EnergyCapacity, value = 0.1 },
 }, -1, BuffsHelper.ApplyMode.Add, false, "SturdyBuild", "Sturdy high-quality craft produced on a\nshipyard in sector ${sector}.", { sector = "(133:425)" })
 ]]
-function Buffs._addBuff(name, effects, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color)
+function Buffs._addBuff(name, effects, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor)
     if not isReady then -- add to pending operations
         pending[#pending+1] = {
           func = "addBuff",
-          args = {name, effects, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color}
+          args = {name, effects, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor}
         }
         return nil, 0
     end
     if string.find(name, '.', 1, true) then return nil, 1 end -- names can't contain '.'
     if not duration or duration < 0 then duration = -1 end
     if not applyMode then applyMode = 1 end
-    if duration == -1 then
+    if duration == -1 then -- can't use 'Combine' when duration is infinite
         if applyMode == 3 then applyMode = 2
         elseif applyMode == 5 then applyMode = 4 end
     end
@@ -545,12 +608,13 @@ function Buffs._addBuff(name, effects, duration, applyMode, isAbsoluteDecay, ico
     if not buff then
         local keysNeeded = 0
         for _, effect in ipairs(effects) do
-            if not effect.script then
+            if not effect.script then -- only StatsBonuses need keys
                 keysNeeded = keysNeeded + 1
             end
         end
         local keys = getFreeKey(keysNeeded)
         if not keys then return nil, 2 end -- can't add more than 1000 bonuses
+
         local entity = Entity()
         local k = 1
         local scripts, newScripts
@@ -558,14 +622,15 @@ function Buffs._addBuff(name, effects, duration, applyMode, isAbsoluteDecay, ico
             if effect.script then
                 if not effect.args then effect.args = {} end
                 if not scripts then scripts = entity:getScripts() end
-                entity:addScript(effect.script, unpack(effect.args))
+                entity:addScript("data/scripts/entity/buffs/"..effect.script, unpack(effect.args))
                 newScripts = entity:getScripts()
-                for j, _ in pairs(newScripts) do
+                for j, _ in pairs(newScripts) do -- check the difference between old and new script indexes
                     if not scripts[j] then
                         effect.index = j
                         break
                     end
                 end
+                Log.Debug("effect.index: %i", effect.index or -1)
                 scripts = newScripts
             else
                 effect.key = keys[k]
@@ -585,11 +650,12 @@ function Buffs._addBuff(name, effects, duration, applyMode, isAbsoluteDecay, ico
           name = name,
           effects = effects,
           duration = duration,
-          isAbsolute = isAbsoluteDecay,
+          isAbsolute = isAbsoluteDecay and true or nil,
           icon = icon,
           desc = description,
           descArgs = descArgs,
           color = color,
+          lowColor = lowDurationColor,
           type = 5
         }
     else
@@ -598,7 +664,8 @@ function Buffs._addBuff(name, effects, duration, applyMode, isAbsoluteDecay, ico
         elseif applyMode == 3 or applyMode == 5 then
             buff.duration = buff.duration + duration
         end
-        buff.isAbsolute = isAbsoluteDecay
+        -- refresh other stats just in case
+        buff.isAbsolute = isAbsoluteDecay and true or nil
         if icon then buff.icon = icon end
         if description then buff.desc = description end
         if color then buff.color = color end
@@ -625,6 +692,7 @@ Arguments:
 * description - Buff description, long descriptions should be separated into lines with '\n'. I advise to register your descriptions in the "BuffsIntegration.lua" instead.
 * descArgs - Table of arguments for description.
 * color - Custom icon color, should be an int (example: 0xff0000ff - blue).
+* lowDurationColor - Custom color that will be used in a gradient with previous color when there are < 60 seconds left.
 Returns:
 * true - Added/updated buff
 * false - if applyMode == 1, buff already exists. If applyMode == 4 or 5, buff weren't updated because it doesn't exist
@@ -633,11 +701,11 @@ Returns:
   1 - Names can't contain '.'
   2 - Ran out of keys, can't add more than 1000 bonuses
 ]]
-function Buffs._addBaseMultiplier(name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color)
+function Buffs._addBaseMultiplier(name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor)
     if not isReady then -- add to pending operations
         pending[#pending+1] = {
           func = "addBaseMultiplier",
-          args = {name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color}
+          args = {name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor}
         }
         return nil, 0
     end
@@ -661,11 +729,12 @@ function Buffs._addBaseMultiplier(name, stat, value, duration, applyMode, isAbso
           stat = stat,
           value = value,
           duration = duration,
-          isAbsolute = isAbsoluteDecay,
+          isAbsolute = isAbsoluteDecay and true or nil,
           icon = icon,
           desc = description,
           descArgs = descArgs,
           color = color,
+          lowColor = lowDurationColor,
           key = key,
           type = 1
         }
@@ -676,7 +745,7 @@ function Buffs._addBaseMultiplier(name, stat, value, duration, applyMode, isAbso
         elseif applyMode == 3 or applyMode == 5 then
             buff.duration = buff.duration + duration
         end
-        buff.isAbsolute = isAbsoluteDecay
+        buff.isAbsolute = isAbsoluteDecay and true or nil
         if icon then buff.icon = icon end
         if description then buff.desc = description end
         if color then buff.color = color end
@@ -685,11 +754,11 @@ function Buffs._addBaseMultiplier(name, stat, value, duration, applyMode, isAbso
     return true
 end
 
-function Buffs._addMultiplier(name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color)
+function Buffs._addMultiplier(name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor)
     if not isReady then -- add to pending operations
         pending[#pending+1] = {
           func = "addMultiplier",
-          args = {name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color}
+          args = {name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor}
         }
         return nil, 0
     end
@@ -713,11 +782,12 @@ function Buffs._addMultiplier(name, stat, value, duration, applyMode, isAbsolute
           stat = stat,
           value = value,
           duration = duration,
-          isAbsolute = isAbsoluteDecay,
+          isAbsolute = isAbsoluteDecay and true or nil,
           icon = icon,
           desc = description,
           descArgs = descArgs,
           color = color,
+          lowColor = lowDurationColor,
           key = key,
           type = 2
         }
@@ -728,7 +798,7 @@ function Buffs._addMultiplier(name, stat, value, duration, applyMode, isAbsolute
         elseif applyMode == 3 or applyMode == 5 then
             buff.duration = buff.duration + duration
         end
-        buff.isAbsolute = isAbsoluteDecay
+        buff.isAbsolute = isAbsoluteDecay and true or nil
         if icon then buff.icon = icon end
         if description then buff.desc = description end
         if color then buff.color = color end
@@ -737,11 +807,11 @@ function Buffs._addMultiplier(name, stat, value, duration, applyMode, isAbsolute
     return true
 end
 
-function Buffs._addMultiplyableBias(name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color)
+function Buffs._addMultiplyableBias(name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor)
     if not isReady then -- add to pending operations
         pending[#pending+1] = {
           func = "addMultiplyableBias",
-          args = {name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color}
+          args = {name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor}
         }
         return nil, 0
     end
@@ -765,11 +835,12 @@ function Buffs._addMultiplyableBias(name, stat, value, duration, applyMode, isAb
           stat = stat,
           value = value,
           duration = duration,
-          isAbsolute = isAbsoluteDecay,
+          isAbsolute = isAbsoluteDecay and true or nil,
           icon = icon,
           desc = description,
           descArgs = descArgs,
           color = color,
+          lowColor = lowDurationColor,
           key = key,
           type = 3
         }
@@ -780,7 +851,7 @@ function Buffs._addMultiplyableBias(name, stat, value, duration, applyMode, isAb
         elseif applyMode == 3 or applyMode == 5 then
             buff.duration = buff.duration + duration
         end
-        buff.isAbsolute = isAbsoluteDecay
+        buff.isAbsolute = isAbsoluteDecay and true or nil
         if icon then buff.icon = icon end
         if description then buff.desc = description end
         if color then buff.color = color end
@@ -789,11 +860,11 @@ function Buffs._addMultiplyableBias(name, stat, value, duration, applyMode, isAb
     return true
 end
 
-function Buffs._addAbsoluteBias(name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color)
+function Buffs._addAbsoluteBias(name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor)
     if not isReady then -- add to pending operations
         pending[#pending+1] = {
           func = "addAbsoluteBias",
-          args = {name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color}
+          args = {name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor}
         }
         return nil, 0
     end
@@ -817,11 +888,12 @@ function Buffs._addAbsoluteBias(name, stat, value, duration, applyMode, isAbsolu
           stat = stat,
           value = value,
           duration = duration,
-          isAbsolute = isAbsoluteDecay,
+          isAbsolute = isAbsoluteDecay and true or nil,
           icon = icon,
           desc = description,
           descArgs = descArgs,
           color = color,
+          lowColor = lowDurationColor,
           key = key,
           type = 4
         }
@@ -832,7 +904,7 @@ function Buffs._addAbsoluteBias(name, stat, value, duration, applyMode, isAbsolu
         elseif applyMode == 3 or applyMode == 5 then
             buff.duration = buff.duration + duration
         end
-        buff.isAbsolute = isAbsoluteDecay
+        buff.isAbsolute = isAbsoluteDecay and true or nil
         if icon then buff.icon = icon end
         if description then buff.desc = description end
         if color then buff.color = color end
@@ -841,8 +913,7 @@ function Buffs._addAbsoluteBias(name, stat, value, duration, applyMode, isAbsolu
     return true
 end
 
--- Removes buff
---[[
+--[[ Removes buff
 Returns:
 * true - success
 * false - buff doesn't exist
@@ -885,32 +956,31 @@ function Buffs.removeBonus(fullname)
         local entity = Entity()
         for _, effect in ipairs(buff.effects) do
             if effect.script then
-                entity:removeScript(effect.index)
+                if effect.index then
+                    entity:removeScript(effect.index)
+                    Log.Debug("removing buff script: %i", effect.index)
+                end
             else
                 entity:removeBonus(effect.key)
-                table.insert(data.freeKeys, 1, effect.key)
+                data.freeKeys[#data.freeKeys+1] = effect.key
             end
         end
     else
         Entity():removeBonus(buff.key)
-        table.insert(data.freeKeys, 1, buff.key)
+        data.freeKeys[#data.freeKeys+1] = buff.key
     end
     data.buffs[fullname] = nil
     Buffs.refreshData()
     return true
 end
 
--- Returns all buffs as a table. If called before `restore` returns empty table.
+-- Returns all buffs as a table. If called before `restore`, will return empty table.
 function Buffs.getBuffs()
     if not isReady then return {}, 1 end
     local r = {}
     local e
     for _, buff in pairs(data.buffs) do
-        e = {}
-        for k, v in pairs(buff) do
-            e[k] = v
-        end
-        r[#r+1] = e
+        r[#r+1] = table.deepcopy(buff)
     end
     return r
 end

@@ -19,7 +19,7 @@ BuffsHelper.ApplyMode = {
 }
 
 -- API --
--- For explanation look at 'buffs.lua', line 480+
+-- For explanation look at 'buffs.lua', line 505+
 function BuffsHelper.addBuff(entity, ...)
   entity:invokeFunction("data/scripts/entity/buffs.lua", "_addBuff", ...)
 end
@@ -60,42 +60,54 @@ local function addCustomBonus(shortName, scriptName, tooltipName, tooltipValueFu
     }
 end
 
--- working examples
---[[ Inflicts extra collision damage to the other ship.
+-- Built-in custom effects:
+
+--[[ Inflicts extra damage to other ship on collision.
 * amount - Extra damage, should be > 0. ]]
-addCustomBonus("CollisionDamage", "collisiondamagebuff", "Collision Damage", function(amount)
+addCustomBonus("CollisionDamage", "collisiondamage", "Collision Damage"%_t, function(amount)
     return "+"..amount
 end)
+
 --[[ Increases/decreases all incoming damage.
 * amount - Extra damage factor (0.2 = +20%)
 ]]
-addCustomBonus("DamageMultiplier", "damagemultiplierbuff", "Damage", function(amount)
+addCustomBonus("DamageMultiplier", "damagemultiplier", "Damage"%_t, function(amount)
     amount = amount * 100
     amount = amount > 0 and "+"..amount or amount
     return amount.."%"
 end)
-addCustomBonus("DestroyCargo", "destroycargobuff", "Cargo Destruction", function(frequency)
-    frequency = 1 / frequency
-    return string.format("%.2f/s"%_t, frequency)
+
+--[[ Destroys random cargo 'volume' every 'frequency' seconds. ]]
+addCustomBonus("DestroyCargo", "destroycargo", "Cargo Destruction"%_t, function(volume, frequency)
+    volume = tonumber(string.format("%.2f", volume / frequency)) -- 3 will be displayed as 3 and not 3.00
+    frequency = ("${amount}/s"%_t) % { amount = volume }
+    return volume > 0 and "+"..frequency or frequency
 end)
-addCustomBonus("KillCrew", "killcrewdebuff", "Crew Dies", function(frequency)
-    frequency = 1 / frequency
-    return string.format("%.2f/s"%_t, frequency)
+
+--[[ Kills 'amount' random crew members every 'frequency' seconds. ]]
+addCustomBonus("KillCrew", "killcrew", "Crew Dies"%_t, function(amount, frequency)
+    amount = tonumber(string.format("%.2f", amount / frequency))
+    frequency = ("${amount}/s"%_t) % { amount = amount }
+    return amount > 0 and "+"..frequency or frequency
 end)
-addCustomBonus("ChangeDurability", "changedurabilitybuff", "Durability", function(amount, frequency)
-    frequency = amount / frequency
-    amount = string.format("%.2f/s"%_t, frequency)
-    return frequency > 0 and "+"..amount or amount
+
+--[[ Changes durability by 'amount' every 'frequency' seconds. ]]
+addCustomBonus("ChangeDurability", "changedurability", "Durability"%_t, function(amount, frequency)
+    amount = tonumber(string.format("%.2f", amount / frequency))
+    frequency = ("${amount}/s"%_t) % { amount = amount }
+    return amount > 0 and "+"..frequency or frequency
 end)
-addCustomBonus("ChangeShield", "changeshieldbuff", "Shield", function(amount, frequency)
-    frequency = amount / frequency
-    amount = string.format("%.2f/s"%_t, frequency)
-    return frequency > 0 and "+"..amount or amount
+
+--[[ Changes shield durability by 'amount' every 'frequency' seconds. ]]
+addCustomBonus("ChangeShield", "changeshield", "Shield"%_t, function(amount, frequency)
+    amount = tonumber(string.format("%.2f", amount / frequency))
+    frequency = ("${amount}/s"%_t) % { amount = amount }
+    return amount > 0 and "+"..frequency or frequency
 end)
 
 --[[
-BuffsHelper.addBuff("Spiky", BuffsHelper.Custom.CollisionDamage:New(20), 60, BuffsHelper.ApplyMode.AddOrRefresh, false, "Spiky")
-BuffsHelper.addBuff("Bugs", BuffsHelper.Custom.DestroyCargo:New(20), 60, BuffsHelper.ApplyMode.AddOrRefresh, false, "Bugs")
+BuffsHelper.addBuff("Spiky", { BuffsHelper.Custom.CollisionDamage:New(20) }, 60, BuffsHelper.ApplyMode.AddOrRefresh, false, "Spiky")
+BuffsHelper.addBuff("Bugs", { BuffsHelper.Custom.DestroyCargo:New(10, 5) }, 60, BuffsHelper.ApplyMode.AddOrRefresh, false, "Bugs")
 ]]
 
 return BuffsHelper
