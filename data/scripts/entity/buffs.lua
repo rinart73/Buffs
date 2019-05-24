@@ -485,7 +485,7 @@ function Buffs.onRestoredFromDisk(timePassed)
 end
 
 -- API --
--- Buffs.addBuff(name, effects [, duration [, applyMode [, isAbsoluteDecay [, icon [, description [, color]]]]]])
+-- BuffsHelper.addBuff(name, effects [, duration [, applyMode [, isAbsoluteDecay [, icon [, description [, color]]]]]])
 --[[ Allows to add multiple bonuses within one buff/debuff.
 Arguments:
 * name - Buff name, can't contain '.'
@@ -522,7 +522,7 @@ Buffs.addBuff("Sturdy Build", {
   { type = BuffsHelper.Type.BaseMultiplier, stat = StatsBonuses.EnergyCapacity, value = 0.1 },
 }, -1, BuffsHelper.ApplyMode.Add, false, "SturdyBuild", "Sturdy high-quality craft produced on a\nshipyard in sector ${sector}.", { sector = "(133:425)" })
 ]]
-function Buffs.addBuff(name, effects, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color)
+function Buffs._addBuff(name, effects, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color)
     if not isReady then -- add to pending operations
         pending[#pending+1] = {
           func = "addBuff",
@@ -543,20 +543,42 @@ function Buffs.addBuff(name, effects, duration, applyMode, isAbsoluteDecay, icon
     if applyMode == 1 and buff then return false end -- already exists
     if applyMode >= 4 and not buff then return false end -- doesn't exist
     if not buff then
-        local keys = getFreeKey(#effects)
+        local keysNeeded = 0
+        for _, effect in ipairs(effects) do
+            if not effect.script then
+                keysNeeded = keysNeeded + 1
+            end
+        end
+        local keys = getFreeKey(keysNeeded)
         if not keys then return nil, 2 end -- can't add more than 1000 bonuses
         local entity = Entity()
-        for k, effect in ipairs(effects) do
-            effect.key = keys[k]
-            print(Azimuth.serialize(effect))
-            if effect.type == 1 then
-                entity:addKeyedBaseMultiplier(effect.stat, effect.key, effect.value)
-            elseif effect.type == 2 then
-                entity:addKeyedMultiplier(effect.stat, effect.key, effect.value)
-            elseif effect.type == 3 then
-                entity:addKeyedMultiplyableBias(effect.stat, effect.key, effect.value)
+        local k = 1
+        local scripts, newScripts
+        for _, effect in ipairs(effects) do
+            if effect.script then
+                if not effect.args then effect.args = {} end
+                if not scripts then scripts = entity:getScripts() end
+                entity:addScript(effect.script, unpack(effect.args))
+                newScripts = entity:getScripts()
+                for j, _ in pairs(newScripts) do
+                    if not scripts[j] then
+                        effect.index = j
+                        break
+                    end
+                end
+                scripts = newScripts
             else
-                entity:addKeyedAbsoluteBias(effect.stat, effect.key, effect.value)
+                effect.key = keys[k]
+                k = k + 1
+                if effect.type == 1 then
+                    entity:addKeyedBaseMultiplier(effect.stat, effect.key, effect.value)
+                elseif effect.type == 2 then
+                    entity:addKeyedMultiplier(effect.stat, effect.key, effect.value)
+                elseif effect.type == 3 then
+                    entity:addKeyedMultiplyableBias(effect.stat, effect.key, effect.value)
+                else
+                    entity:addKeyedAbsoluteBias(effect.stat, effect.key, effect.value)
+                end
             end
         end
         data.buffs[fullname] = {
@@ -585,7 +607,7 @@ function Buffs.addBuff(name, effects, duration, applyMode, isAbsoluteDecay, icon
     return true
 end
 
--- Buffs.addBaseMultiplier(name, stat, value [, duration [, applyMode [, isAbsoluteDecay [, icon [, description [, color]]]]]])
+-- BuffsHelper.addBaseMultiplier(name, stat, value [, duration [, applyMode [, isAbsoluteDecay [, icon [, description [, color]]]]]])
 --[[ Acts in a similar fashion to 'Entity():addBaseMultiplier'
 Arguments:
 * name - Buff name, can't contain '.'
@@ -611,7 +633,7 @@ Returns:
   1 - Names can't contain '.'
   2 - Ran out of keys, can't add more than 1000 bonuses
 ]]
-function Buffs.addBaseMultiplier(name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color)
+function Buffs._addBaseMultiplier(name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color)
     if not isReady then -- add to pending operations
         pending[#pending+1] = {
           func = "addBaseMultiplier",
@@ -663,7 +685,7 @@ function Buffs.addBaseMultiplier(name, stat, value, duration, applyMode, isAbsol
     return true
 end
 
-function Buffs.addMultiplier(name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color)
+function Buffs._addMultiplier(name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color)
     if not isReady then -- add to pending operations
         pending[#pending+1] = {
           func = "addMultiplier",
@@ -715,7 +737,7 @@ function Buffs.addMultiplier(name, stat, value, duration, applyMode, isAbsoluteD
     return true
 end
 
-function Buffs.addMultiplyableBias(name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color)
+function Buffs._addMultiplyableBias(name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color)
     if not isReady then -- add to pending operations
         pending[#pending+1] = {
           func = "addMultiplyableBias",
@@ -767,7 +789,7 @@ function Buffs.addMultiplyableBias(name, stat, value, duration, applyMode, isAbs
     return true
 end
 
-function Buffs.addAbsoluteBias(name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color)
+function Buffs._addAbsoluteBias(name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color)
     if not isReady then -- add to pending operations
         pending[#pending+1] = {
           func = "addAbsoluteBias",
@@ -862,8 +884,12 @@ function Buffs.removeBonus(fullname)
     if buff.type == 5 then -- remove all bonuses
         local entity = Entity()
         for _, effect in ipairs(buff.effects) do
-            entity:removeBonus(effect.key)
-            table.insert(data.freeKeys, 1, effect.key)
+            if effect.script then
+                entity:removeScript(effect.index)
+            else
+                entity:removeBonus(effect.key)
+                table.insert(data.freeKeys, 1, effect.key)
+            end
         end
     else
         Entity():removeBonus(buff.key)

@@ -24,34 +24,6 @@ msgid "Mechanics Per Turret"
 msgstr ""
 
 #: mods\Buffs\data\scripts\entity\buffs.lua:
-msgid "Security"
-msgstr ""
-
-#: mods\Buffs\data\scripts\entity\buffs.lua:
-msgid "Boarders"
-msgstr ""
-
-#: mods\Buffs\data\scripts\entity\buffs.lua:
-msgid "Sergeants"
-msgstr ""
-
-#: mods\Buffs\data\scripts\entity\buffs.lua:
-msgid "Lieutenants"
-msgstr ""
-
-#: mods\Buffs\data\scripts\entity\buffs.lua:
-msgid "Commanders"
-msgstr ""
-
-#: mods\Buffs\data\scripts\entity\buffs.lua:
-msgid "Generals"
-msgstr ""
-
-#: mods\Buffs\data\scripts\entity\buffs.lua:
-msgid "Captains"
-msgstr ""
-
-#: mods\Buffs\data\scripts\entity\buffs.lua:
 msgid "%ss"
 msgstr ""
 
