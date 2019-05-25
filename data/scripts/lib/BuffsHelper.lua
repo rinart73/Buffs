@@ -19,7 +19,7 @@ BuffsHelper.ApplyMode = {
 }
 
 -- API --
--- For explanation look at 'buffs.lua', line 505+
+-- For explanation look at 'buffs.lua', line 540+
 function BuffsHelper.addBuff(entity, ...)
   entity:invokeFunction("data/scripts/entity/buffs.lua", "_addBuff", ...)
 end

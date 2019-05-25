@@ -160,15 +160,7 @@ end
 function Buffs.update(timePassed)
     if Player().craftIndex ~= Entity().index then return end
     if buffsCount == 0 then return end
-    -- decay buffs
-    for name, buff in pairs(buffs) do
-        if buff.duration ~= -1 then
-            buff.redraw = math.floor(buff.duration)
-            buff.duration = math.max(0, buff.duration - timePassed)
-            buff.redraw = buff.redraw - math.floor(buff.duration)
-        end
-    end
-    -- check mouse hover
+
     local mousePos = Mouse().position
     local res = getResolution()
     local rx, ry
@@ -179,60 +171,70 @@ function Buffs.update(timePassed)
     local green = ColorRGB(0, 1, 0)
     local customEffect
     for name, buff in pairs(buffs) do
-        rx = res.x / 2 + 270 + math.floor(i / 2) * 30
-        ry = res.y - 65 + (i % 2) * 30
-
-        if mousePos.x >= rx and mousePos.x <= rx + 25 and mousePos.y >= ry and mousePos.y <= ry + 25 then
-            found = true
-            if buff.redraw == 1 or prevHoveredName ~= name then
-                prevHoveredName = name
-
-                local tooltip = Tooltip()
-                local line = TooltipLine(20, 15)
-                line.ltext = buff.name
-                if buff.type == 5 then
-                    line.lcolor = buff.color and buff.color or white
-                else
-                    line.lcolor = buff.isDebuff and red or green
-                end
-                line.rtext = buff.duration ~= -1 and string.format("%ss"%_t, math.floor(buff.duration)) or "Permanent"%_t
-                tooltip:addLine(line)
-                -- display bonuses
-                if buff.type == 5 then -- complex buff
-                    for _, effect in ipairs(buff.effects) do
-                        line = TooltipLine(16, 13)
-                        if effect.script then -- custom effect
-                            customEffect = customEffects[effect.script]
-                            if customEffect then
-                                line.ltext = customEffect.statName
-                                if customEffect.statFunc then
-                                    line.rtext = customEffect.statFunc(unpack(effect.args))
-                                end
-                            end
-                        else
-                            line.ltext = statNames[stats[effect.stat+1]]
-                            line.rtext = getBonusStatString(effect.type, effect.stat, effect.value)
-                        end
-                        tooltip:addLine(line)
-                    end
-                else
-                    line = TooltipLine(16, 13)
-                    line.ltext = statNames[stats[buff.stat+1]]
-                    line.rtext = getBonusStatString(buff.type, buff.stat, buff.value)
-                    tooltip:addLine(line)
-                end
-                --
-                if buff.desc then
-                    tooltip:addLine(TooltipLine(6, 6)) -- empty line to separate bonuses from description
-                    for j = 1, #buff.desc do
-                        line = TooltipLine(15, 13)
-                        line.ltext = buff.desc[j]
-                        tooltip:addLine(line)
-                    end
-                end
-                hoveredBuffTooltip = TooltipRenderer(tooltip)
+        -- decay buffs
+        for name, buff in pairs(buffs) do
+            if buff.duration ~= -1 then
+                buff.redraw = math.floor(buff.duration)
+                buff.duration = math.max(0, buff.duration - timePassed)
+                buff.redraw = buff.redraw - math.floor(buff.duration)
             end
-            break
+        end
+        -- check mouse hover
+        if not found then
+            rx = res.x / 2 + 270 + math.floor(i / 2) * 30
+            ry = res.y - 65 + (i % 2) * 30
+
+            if mousePos.x >= rx and mousePos.x <= rx + 25 and mousePos.y >= ry and mousePos.y <= ry + 25 then
+                found = true
+                if buff.redraw == 1 or prevHoveredName ~= name then
+                    prevHoveredName = name
+
+                    local tooltip = Tooltip()
+                    local line = TooltipLine(20, 15)
+                    line.ltext = buff.name
+                    if buff.type == 5 then
+                        line.lcolor = buff.color and buff.color or white
+                    else
+                        line.lcolor = buff.isDebuff and red or green
+                    end
+                    line.rtext = buff.duration ~= -1 and string.format("%ss"%_t, math.floor(buff.duration)) or "Permanent"%_t
+                    tooltip:addLine(line)
+                    -- display bonuses
+                    if buff.type == 5 then -- complex buff
+                        for _, effect in ipairs(buff.effects) do
+                            line = TooltipLine(16, 13)
+                            if effect.script then -- custom effect
+                                customEffect = customEffects[effect.script]
+                                if customEffect then
+                                    line.ltext = customEffect.statName
+                                    if customEffect.statFunc then
+                                        line.rtext = customEffect.statFunc(unpack(effect.args))
+                                    end
+                                end
+                            else
+                                line.ltext = statNames[stats[effect.stat+1]]
+                                line.rtext = getBonusStatString(effect.type, effect.stat, effect.value)
+                            end
+                            tooltip:addLine(line)
+                        end
+                    else
+                        line = TooltipLine(16, 13)
+                        line.ltext = statNames[stats[buff.stat+1]]
+                        line.rtext = getBonusStatString(buff.type, buff.stat, buff.value)
+                        tooltip:addLine(line)
+                    end
+                    --
+                    if buff.desc then
+                        tooltip:addLine(TooltipLine(6, 6)) -- empty line to separate bonuses from description
+                        for j = 1, #buff.desc do
+                            line = TooltipLine(15, 13)
+                            line.ltext = buff.desc[j]
+                            tooltip:addLine(line)
+                        end
+                    end
+                    hoveredBuffTooltip = TooltipRenderer(tooltip)
+                end
+            end
         end
         i = i + 1
     end
@@ -477,13 +479,35 @@ function Buffs.onRemove()
 end
 
 function Buffs.update(timePassed)
+    local canFixEffects = true
     for name, buff in pairs(data.buffs) do
-        if buff.duration ~= -1 then
+        if buff.duration ~= -1 then -- decay duration and remove buffs
             buff.duration = math.max(0, buff.duration - timePassed)
             if buff.duration == 0 then
                 Buffs.removeBonus(name)
             end
         end
+        -- check if entity should have any custom effects
+        if data.fixEffects and canFixEffects and buff and buff.duration ~= 0 and buff.type == 5 then
+            for _, effect in ipairs(buff.effects) do
+                if effect.script then
+                    canFixEffects = false
+                    break
+                end
+            end
+        end
+    end
+    if data.fixEffects and canFixEffects then -- some custom effect scripts weren't removed when needed, trying to fix this
+        Log.Debug("Trying to remove old custom effects")
+        local entity = Entity()
+        local scripts = entity:getScripts()
+        for index, path in pairs(scripts) do
+            if string.find(path, "data/scripts/entity/buffs/", 1, true) then
+                Log.Debug("Removing old effect script %i: %s", index, path)
+                entity:removeScript(path)
+            end
+        end
+        data.fixEffects = nil
     end
 end
 
@@ -612,7 +636,7 @@ function Buffs._addBuff(name, effects, duration, applyMode, isAbsoluteDecay, ico
             if effect.script then
                 if not effect.args then effect.args = {} end
                 if not scripts then scripts = entity:getScripts() end
-                entity:addScript("data/scripts/entity/buffs/"..effect.script, unpack(effect.args))
+                entity:addScript("data/scripts/entity/buffs/"..effect.script..".lua", unpack(effect.args))
                 newScripts = entity:getScripts()
                 for j, _ in pairs(newScripts) do -- check the difference between old and new script indexes
                     if not scripts[j] then
@@ -944,11 +968,20 @@ function Buffs.removeBonus(fullname)
     if not buff then return false end -- can't find
     if buff.type == 5 then -- remove all bonuses
         local entity = Entity()
+        local scripts, script, effectScript
         for _, effect in ipairs(buff.effects) do
             if effect.script then
                 if effect.index then
-                    entity:removeScript(effect.index)
-                    Log.Debug("removing buff script: %i", effect.index)
+                    if not scripts then scripts = entity:getScripts() end
+                    effectScript = "data/scripts/entity/buffs/"..effect.script..".lua"
+                    script = scripts[effect.index]
+                    if script and string.find(script, effectScript, 1, true) then
+                        entity:removeScript(effect.index)
+                        Log.Debug("Removing buff script: %i", effect.index)
+                    else
+                        Log.Error("Couldn't remove buff script '%i', paths don't match: '%s' ~= '%s' - will be automatically fixed when possible", effect.index, effectScript, script or "")
+                        data.fixEffects = true
+                    end
                 end
             else
                 entity:removeBonus(effect.key)
