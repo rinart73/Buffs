@@ -1,78 +1,60 @@
-# ========== mods\Buffs\data\scripts\entity\buffs.lua ==========
-#: mods\Buffs\data\scripts\entity\buffs.lua:
+# ========== data\scripts\entity\buffs.lua ==========
+#: data\scripts\entity\buffs.lua:
 msgid "Material Scanner Range"
 msgstr "Радиус сканирования астероидов"
 
-#: mods\Buffs\data\scripts\entity\buffs.lua:
+#: data\scripts\entity\buffs.lua:
 msgid "Time Until Recharge (Depletion)"
 msgstr "Время перезарядки после истощения"
 
-#: mods\Buffs\data\scripts\entity\buffs.lua:
+#: data\scripts\entity\buffs.lua:
 msgid "Pilots Per Fighter"
 msgstr "Пилотов на истребитель"
 
-#: mods\Buffs\data\scripts\entity\buffs.lua:
+#: data\scripts\entity\buffs.lua:
 msgid "Miners Per Turret"
 msgstr "Рудокопов на турель"
 
-#: mods\Buffs\data\scripts\entity\buffs.lua:
+#: data\scripts\entity\buffs.lua:
 msgid "Gunners Per Turret"
 msgstr "Наводчиков на турель"
 
-#: mods\Buffs\data\scripts\entity\buffs.lua:
+#: data\scripts\entity\buffs.lua:
 msgid "Mechanics Per Turret"
 msgstr "Механиков на турель"
 
-#: mods\Buffs\data\scripts\entity\buffs.lua:
-msgid "Security"
-msgstr "Охранники"
+#: data\scripts\entity\buffs.lua:
+msgid "Craft Stats"
+msgstr "Характеристики"
 
-#: mods\Buffs\data\scripts\entity\buffs.lua:
-msgid "Boarders"
-msgstr "Десантники"
+#: data\scripts\entity\buffs.lua:
+msgid "Stat"
+msgstr "Хар-ка"
 
-#: mods\Buffs\data\scripts\entity\buffs.lua:
-msgid "Sergeants"
-msgstr "Сержанты"
+#: data\scripts\entity\buffs.lua:
+msgid "Base value"
+msgstr "Базовое зн."
 
-#: mods\Buffs\data\scripts\entity\buffs.lua:
-msgid "Lieutenants"
-msgstr "Лейтенанты"
+#: data\scripts\entity\buffs.lua:
+msgid "Result"
+msgstr "Итоговое зн."
 
-#: mods\Buffs\data\scripts\entity\buffs.lua:
-msgid "Commanders"
-msgstr "Командиры"
-
-#: mods\Buffs\data\scripts\entity\buffs.lua:
-msgid "Generals"
-msgstr "Генералы"
-
-#: mods\Buffs\data\scripts\entity\buffs.lua:
-msgid "Captains"
-msgstr "Капитаны"
-
-#: mods\Buffs\data\scripts\entity\buffs.lua:
-msgid "%ss"
-msgstr "%sс"
-
-#: mods\Buffs\data\scripts\entity\buffs.lua:
+#: data\scripts\entity\buffs.lua:
 msgid "Permanent"
 msgstr "Постоянный"
 
 
-# ========== mods\Buffs\data\scripts\lib\BuffsHelper.lua ==========
-#: mods\Buffs\data\scripts\lib\BuffsHelper.lua:
+# ========== data\scripts\lib\BuffsHelper.lua ==========
+#: data\scripts\lib\BuffsHelper.lua:
 msgid "Cargo Destruction"
 msgstr "Уничтожение грузов"
 
-#: mods\Buffs\data\scripts\lib\BuffsHelper.lua:
+#: data\scripts\lib\BuffsHelper.lua:
 msgid "${amount}/s"
 msgstr "${amount}/с"
 
-#: mods\Buffs\data\scripts\lib\BuffsHelper.lua:
+#: data\scripts\lib\BuffsHelper.lua:
 msgid "Crew Dies"
 msgstr "Экипаж умирает"
-
-
 
 

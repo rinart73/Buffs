@@ -9,24 +9,29 @@ local BuffsHelper = include("BuffsHelper")
 Buffs = {}
 
 local buffPrefixes = {"BM_", "M_", "MB_", "AB_", "_B"}
+local statLabels = {}
+local buffDescriptions, Config, Log, stats, uiStats, statNames, customEffects, buffs, buffsCount, hoveredBuffTooltip, prevHoveredName, distanceString, post0_25_2
+local data, pending, isReady
 
 if onClient() then
 
 
-local buffDescriptions = include("BuffsIntegration")
+include("azimuthlib-uiproportionalsplitter")
+buffDescriptions = include("BuffsIntegration")
 
 local configOptions = {
   _version = {default = "0.1", comment = "Config version. Don't touch."},
   LogLevel = {default = 2, min = 0, max = 4, format = "floor", comment = "0 - Disable, 1 - Errors, 2 - Warnings, 3 - Info, 4 - Debug."},
 }
-local config, isModified = Azimuth.loadConfig("Buffs", configOptions)
+local isModified
+Config, isModified = Azimuth.loadConfig("Buffs", configOptions)
 if isModified then
-    Azimuth.saveConfig("Buffs", config, configOptions)
+    Azimuth.saveConfig("Buffs", Config, configOptions)
 end
-local Log = Azimuth.logs("Buffs", config.LogLevel)
+Log = Azimuth.logs("Buffs", Config.LogLevel)
 
 
-local stats = {
+stats = {
   "RadarReach",
   "HiddenSectorRadarReach",
   "ScannerReach",
@@ -47,6 +52,7 @@ local stats = {
   "ArbitraryTurrets",
   "UnarmedTurrets",
   "ArmedTurrets",
+  "DefenseWeapons",
   "CargoHold",
   "LootCollectionRange",
   "TransporterRange",
@@ -65,60 +71,183 @@ local stats = {
   "Lieutenants",
   "Commanders",
   "Generals",
-  "Captains"
+  "Captains",
 }
-local statNames = {
-  RadarReach = "Radar Range"%_t,
-  HiddenSectorRadarReach = "Deep Scan Range"%_t,
-  ScannerReach = "Scanner Range"%_t,
-  ScannerMaterialReach = "Material Scanner Range"%_t,
-  HyperspaceReach = "Jump Range"%_t,
-  HyperspaceCooldown = "Hyperspace Cooldown"%_t,
-  HyperspaceRechargeEnergy = "Recharge Energy"%_t,
-  ShieldDurability = "Shield Durability"%_t,
-  ShieldRecharge = "Shield Recharge Rate"%_t,
-  ShieldTimeUntilRechargeAfterHit = "Time Until Recharge"%_t,
-  ShieldTimeUntilRechargeAfterDepletion = "Time Until Recharge (Depletion)"%_t,
-  ShieldImpenetrable = "Impenetrable Shields"%_t,
-  Velocity = "Velocity"%_t,
-  Acceleration = "Acceleration"%_t,
-  GeneratedEnergy = "Generated Energy"%_t,
-  EnergyCapacity = "Energy Capacity"%_t,
-  BatteryRecharge = "Recharge Rate"%_t,
-  ArbitraryTurrets = "Armed or Unarmed Turret Slots"%_t,
-  UnarmedTurrets = "Unarmed Turret Slots"%_t,
-  ArmedTurrets = "Armed Turret Slots"%_t,
-  CargoHold = "Cargo Hold"%_t,
-  LootCollectionRange = "Loot Collection Range"%_t,
-  TransporterRange = "Docking Distance"%_t,
-  FighterCargoPickup = "Fighter Cargo Pickup"%_t,
-  PilotsPerFighter = "Pilots Per Fighter"%_t,
-  MinersPerTurret = "Miners Per Turret"%_t,
-  GunnersPerTurret = "Gunners Per Turret"%_t,
-  MechanicsPerTurret = "Mechanics Per Turret"%_t,
-  Engineers = "Engineers"%_t,
-  Mechanics = "Mechanics"%_t,
-  Gunners= "Gunners"%_t,
-  Miners = "Miners"%_t,
-  Security = "Security"%_t,
-  Attackers = "Boarders"%_t,
-  Sergeants = "Sergeants"%_t,
-  Lieutenants = "Lieutenants"%_t,
-  Commanders = "Commanders"%_t,
-  Generals = "Generals"%_t,
-  Captains = "Captains"%_t
+statNames = {
+  RadarReach = {
+    name = "Radar Range"%_t,
+    func = function(stats) return stats.radarRadius + 14 end
+  },
+  HiddenSectorRadarReach = {
+    name = "Deep Scan Range"%_t,
+    value = 0
+  },
+  ScannerReach = {
+    name = "Scanner Range"%_t,
+    value = 50 -- 0.5km, check
+  },
+  ScannerMaterialReach = {
+    name = "Material Scanner Range"%_t,
+    value = 50 -- 0.5km, check
+  },
+  HyperspaceReach = {
+    name = "Jump Range"%_t,
+    func = function(stats) return math.pow(stats.hyperspacePower, 1/3) + 2.5 end
+  },
+  HyperspaceCooldown = {
+    name = "Hyperspace Cooldown"%_t,
+    -- unknown formula
+  },
+  HyperspaceRechargeEnergy = {
+    name = "Recharge Energy"%_t.." (".."Hyperdrive"%_t..")",
+    -- unknown formula
+  },
+  ShieldDurability = {
+    name = "Shield Durability"%_t,
+    stat = "shield"
+  },
+  ShieldRecharge = {
+    name = "Shield Recharge Rate"%_t,
+    -- unknown formula
+  },
+  ShieldTimeUntilRechargeAfterHit = {
+    name = "Time Until Recharge"%_t.." (".."Shield"%_t..")",
+    value = 30 -- from hints
+  },
+  ShieldTimeUntilRechargeAfterDepletion = {
+    name = "Time Until Recharge (Depletion)"%_t.." (".."Shield"%_t..")",
+    value = 30 -- not sure
+  },
+  ShieldImpenetrable = {
+    name = "Impenetrable Shields"%_t,
+    value = 0 -- boolean
+  },
+  Velocity = {
+    name = "Velocity"%_t
+    -- unknown formula
+  },
+  Acceleration = {
+    name = "Acceleration"%_t,
+    -- unknown formula
+  },
+  GeneratedEnergy = {
+    name = "Generated Energy"%_t,
+    stat = "energyYield"
+  },
+  EnergyCapacity = {
+    name = "Energy Capacity"%_t,
+    stat = "storableEnergy"
+  },
+  BatteryRecharge = {
+    name = "Recharge Rate"%_t,
+    func = function(stats) return stats.storableEnergy * 0.05 end
+  },
+  ArbitraryTurrets = {
+    name = "Armed or Unarmed Turret Slots"%_t,
+    value = 1 -- check
+  },
+  UnarmedTurrets = {
+    name = "Unarmed Turret Slots"%_t,
+    value = 1 -- check
+  },
+  ArmedTurrets = {
+    name = "Armed Turret Slots"%_t,
+    value = 1 -- check
+  },
+  CargoHold = {
+    name = "Cargo Hold"%_t,
+    stat = "cargoHold"
+  },
+  LootCollectionRange = {
+    name = "Loot Collection Range"%_t,
+    value = 100 -- from tests, not sure
+  },
+  TransporterRange = {
+    name = "Docking Distance"%_t,
+    value = 0
+  },
+  DefenseWeapons = {
+    name = "Defense Weapons"%_t,
+    value = 0
+  },
+  FighterCargoPickup = {
+    name = "Fighter Cargo Pickup"%_t,
+    value = 0 -- boolean
+  },
+  PilotsPerFighter = {
+    name = "Pilots Per Fighter"%_t,
+    value = 1
+  },
+  MinersPerTurret = {
+    name = "Miners Per Turret"%_t,
+    value = 1
+  },
+  GunnersPerTurret = {
+    name = "Gunners Per Turret"%_t,
+    value = 1
+  },
+  MechanicsPerTurret = {
+    name = "Mechanics Per Turret"%_t,
+    value = 1
+  },
+  Engineers = {
+    name = "Engineers"%_t,
+    crew = "engineers"
+  },
+  Mechanics = {
+    name = "Mechanics"%_t,
+    crew = "mechanics"
+  },
+  Gunners = {
+    name = "Gunners"%_t,
+    crew = "gunners"
+  },
+  Miners = {
+    name = "Miners"%_t,
+    crew = "miners"
+  },
+  Security = {
+    name = "Security /* as in an undefined amount of Security */"%_t,
+    crew = "security"
+  },
+  Attackers = {
+    name = "Boarders /* as in an undefined amount of Boarders */"%_t,
+    crew = "attackers"
+  },
+  Sergeants = {
+    name = "Sergeants /* as in an undefined amount of Sergeants */"%_t,
+    crew = "sergeants"
+  },
+  Lieutenants = {
+    name = "Lieutenants /* as in an undefined amount of Lieutenants */"%_t,
+    crew = "lieutenants"
+  },
+  Commanders = {
+    name = "Commanders /* as in an undefined amount of Commanders */"%_t,
+    crew = "commanders"
+  },
+  Generals = {
+    name = "Generals /* as in an undefined amount of Generals */"%_t,
+    crew = "generals"
+  },
+  Captains = {
+    name = "Captains /* as in an undefined amount of Captains */"%_t,
+    crew = "captains"
+  }
 }
-local customEffects = {}
+customEffects = {}
 for _, v in pairs(BuffsHelper.Custom) do
     customEffects[v.script] = v
 end
-local buffs = {}
-local buffsCount = 0
-local hoveredBuffTooltip, prevHoveredName
-local distanceString = "+${distance} km"%_t
+buffs = {}
+buffsCount = 0
+distanceString = "+${distance} km"%_t
 distanceString = distanceString:sub(2)
 
-local function getBonusStatString(type, stat, value) -- create correct description of buff effect
+local version = GameVersion()
+post0_25_2 = version.minor > 25 or (version.minor == 25 and version.patch == 2)
+
+function Buffs.getBonusStatString(type, stat, value, noSign) -- create correct description of buff effect
     if type == 1 or type == 2 then
         if type == 2 then
             value = value - 1
@@ -129,19 +258,46 @@ local function getBonusStatString(type, stat, value) -- create correct descripti
         value = value * 100 -- 0.3 -> 30%
         return (value > 0 and "+"..value or value).."%"
     else
-        local valueStr = value
+        local valueStr
         if stat == StatsBonuses.ScannerReach
           or stat == StatsBonuses.ScannerMaterialReach
           or stat == StatsBonuses.LootCollectionRange
-          or stat == StatsBonuses.TransporterRange
-          or stat == StatsBonuses.FighterCargoPickup then
-            valueStr = distanceString % {distance = value / 100} -- to km
+          or stat == StatsBonuses.TransporterRange then
+            valueStr = distanceString % {distance = round(value / 100, 2)} -- to km
         elseif stat == StatsBonuses.HyperspaceRechargeEnergy then
-            value = -value
-            valueStr = value
+            if not noSign then
+                value = -value
+            end
+            valueStr = round(value, 2)
+        elseif stat == StatsBonuses.HyperspaceCooldown or stat == StatsBonuses.ShieldTimeUntilRechargeAfterHit
+          or stat == StatsBonuses.ShieldTimeUntilRechargeAfterDepletion then
+            valueStr = round(value, 2).." ".."s /* Unit for seconds */"%_t
+        elseif stat == StatsBonuses.GeneratedEnergy or stat == StatsBonuses.EnergyCapacity or stat == StatsBonuses.BatteryRecharge then
+            if math.floor(value / 1000000000000) > 0 then
+                valueStr = round(value / 1000000000000, 2).." T".."J /* Unit: Joule */"%_t
+            elseif math.floor(value / 1000000000) > 0 then
+                valueStr = round(value / 1000000000, 2).." G".."J /* Unit: Joule */"%_t
+            elseif math.floor(value / 1000000) > 0 then
+                valueStr = round(value / 1000000, 2).." M".."J /* Unit: Joule */"%_t
+            elseif math.floor(value / 1000) > 0 then
+                valueStr = round(value / 1000, 2).." K".."J /* Unit: Joule */"%_t
+            else
+                valueStr = round(value, 2).." ".."J /* Unit: Joule */"%_t
+            end
+        elseif stat == StatsBonuses.FighterCargoPickup or stat == StatsBonuses.ShieldImpenetrable then
+            valueStr = value <= 0 and "No"%_t or "Yes"%_t
+        else
+            valueStr = round(value, 2)
+        end
+        if noSign then
+            return valueStr
         end
         return value > 0 and "+"..valueStr or valueStr
     end
+end
+
+function Buffs.getIcon()
+    return "data/textures/icons/blockstats.png"
 end
 
 function Buffs.getUpdateInterval()
@@ -149,6 +305,14 @@ function Buffs.getUpdateInterval()
 end
 
 function Buffs.initialize()
+    uiStats = stats -- display order
+    -- correct stats indexes
+    local correctedStats = {}
+    for _, key in ipairs(stats) do
+        correctedStats[StatsBonuses[key]] = key
+    end
+    stats = correctedStats
+
     Player():registerCallback("onPostRenderHud", "onRenderHud")
     Entity():registerCallback("onCraftSeatEntered", "onCraftSeatEntered")
 
@@ -157,8 +321,104 @@ function Buffs.initialize()
     end
 end
 
+function Buffs.interactionPossible(playerIndex, option)
+    local factionIndex = Entity().factionIndex
+    if factionIndex == playerIndex or factionIndex == Player().allianceIndex then
+        return true
+    end
+
+    return false
+end
+
+function Buffs.initUI()
+    local res = getResolution()
+    local size = vec2(700, 510)
+
+    local menu = ScriptUI()
+    local window = menu:createWindow(Rect(res * 0.5 - size * 0.5, res * 0.5 + size * 0.5))
+    menu:registerWindow(window, "Craft Stats"%_t)
+    window.caption = "Craft Stats"%_t
+    window.showCloseButton = 1
+    window.moveable = 1
+
+    local hpartitions = UIHorizontalProportionalSplitter(Rect(size), 10, 10, {20, 0.5})
+    
+    local partitions = UIVerticalProportionalSplitter(hpartitions[1], 10, {10, 25, 3, 0}, {0.55, 0.225, 0.225})
+    window:createLabel(partitions[1], "Stat"%_t, 13)
+    window:createLabel(partitions[2], "Base value"%_t, 13)
+    window:createLabel(partitions[3], "Result"%_t, 13)
+
+    local lister = UIVerticalLister(hpartitions[2], 10, 10)
+    lister.marginLeft = 0
+    lister.marginRight = 35
+
+    local frame = window:createScrollFrame(hpartitions[2])
+    frame.scrollSpeed = 40
+
+    local index = 0
+    local rect, nameLabel, baseValueLabel, resultingValueLabel, pair
+    for _, bonus in pairs(uiStats) do
+        pair = statNames[bonus]
+        if pair.value or pair.stat or pair.crew or pair.func then -- don't show stat if there is no way to get base value
+            rect = lister:placeCenter(vec2(lister.inner.width, 28))
+            partitions = UIVerticalProportionalSplitter(rect, 10, 0, {0.55, 0.225, 0.225})
+            nameLabel = frame:createLabel(partitions[1], pair.name, 14)
+            nameLabel.wordBreak = true
+            baseValueLabel = frame:createLabel(partitions[2], "", 14)
+            resultingValueLabel = frame:createLabel(partitions[3], "", 14)
+
+            if index % 2 == 0 then
+                nameLabel.color = ColorInt(0xff797979)
+                baseValueLabel.color = ColorInt(0xff696969)
+                resultingValueLabel.color = ColorInt(0xff696969)
+            end
+
+            statLabels[#statLabels+1] = {
+              baseValue = baseValueLabel,
+              resultingValue = resultingValueLabel,
+              bonus = bonus
+            }
+            index = index + 1
+        end
+    end
+    uiStats = nil
+end
+
+function Buffs.onShowWindow()
+    local entity = Entity()
+    local crew = entity.crew
+    local planStats = entity:getPlan():getStats()
+    local value, bonus, bonusId
+    for _, group in ipairs(statLabels) do
+        bonus = statNames[group.bonus]
+        bonusId = StatsBonuses[group.bonus]
+        if bonus.value then
+            value = bonus.value
+        elseif bonus.stat then
+            value = planStats[bonus.stat]
+        elseif bonus.crew then
+            value = crew[bonus.crew]
+        elseif bonus.func then
+            value = bonus.func(planStats)
+        else
+            value = nil
+        end
+        if value ~= nil then
+            group.baseValue.caption = Buffs.getBonusStatString(4, bonusId, value, true)
+        else
+            group.baseValue.caption = "?"
+            value = 1
+        end
+
+        value = entity:getBoostedValue(bonusId, value)
+        group.resultingValue.caption = Buffs.getBonusStatString(4, bonusId, value, true)
+    end
+end
+
+local shield = 0
 function Buffs.update(timePassed)
-    if Player().craftIndex ~= Entity().index then return end
+    local player = Player()
+    if player.craftIndex ~= Entity().index then return end
     if buffsCount == 0 then return end
 
     local mousePos = Mouse().position
@@ -170,24 +430,28 @@ function Buffs.update(timePassed)
     local red = ColorRGB(1, 0, 0)
     local green = ColorRGB(0, 1, 0)
     local customEffect
-    for name, buff in pairs(buffs) do
+    local noClientUpdate = false
+    if post0_25_2 then
+        if player.state ~= PlayerStateType.Fly and player.state ~= PlayerStateType.Interact then
+            noClientUpdate = true
+        end
+    end
+    for _, buff in ipairs(buffs) do
         -- decay buffs
-        for name, buff in pairs(buffs) do
-            if buff.duration ~= -1 then
-                buff.redraw = math.floor(buff.duration)
-                buff.duration = math.max(0, buff.duration - timePassed)
-                buff.redraw = buff.redraw - math.floor(buff.duration)
-            end
+        if buff.duration ~= -1 then
+            buff.redraw = math.floor(buff.duration)
+            buff.duration = math.max(0, buff.duration - timePassed)
+            buff.redraw = buff.redraw - math.floor(buff.duration)
         end
         -- check mouse hover
-        if not found then
+        if not noClientUpdate and not found then
             rx = res.x / 2 + 270 + math.floor(i / 2) * 30
             ry = res.y - 65 + (i % 2) * 30
 
             if mousePos.x >= rx and mousePos.x <= rx + 25 and mousePos.y >= ry and mousePos.y <= ry + 25 then
                 found = true
-                if buff.redraw == 1 or prevHoveredName ~= name then
-                    prevHoveredName = name
+                if buff.redraw == 1 or prevHoveredName ~= buff.fullname then
+                    prevHoveredName = buff.fullname
 
                     local tooltip = Tooltip()
                     local line = TooltipLine(20, 15)
@@ -197,7 +461,7 @@ function Buffs.update(timePassed)
                     else
                         line.lcolor = buff.isDebuff and red or green
                     end
-                    line.rtext = buff.duration ~= -1 and string.format("%ss"%_t, math.floor(buff.duration)) or "Permanent"%_t
+                    line.rtext = buff.duration ~= -1 and math.floor(buff.duration).."s /* Unit for seconds */"%_t or "Permanent"%_t
                     tooltip:addLine(line)
                     -- display bonuses
                     if buff.type == 5 then -- complex buff
@@ -212,15 +476,15 @@ function Buffs.update(timePassed)
                                     end
                                 end
                             else
-                                line.ltext = statNames[stats[effect.stat+1]]
-                                line.rtext = getBonusStatString(effect.type, effect.stat, effect.value)
+                                line.ltext = statNames[stats[effect.stat]].name
+                                line.rtext = Buffs.getBonusStatString(effect.type, effect.stat, effect.value)
                             end
                             tooltip:addLine(line)
                         end
                     else
                         line = TooltipLine(16, 13)
-                        line.ltext = statNames[stats[buff.stat+1]]
-                        line.rtext = getBonusStatString(buff.type, buff.stat, buff.value)
+                        line.ltext = statNames[stats[buff.stat]].name
+                        line.rtext = Buffs.getBonusStatString(buff.type, buff.stat, buff.value)
                         tooltip:addLine(line)
                     end
                     --
@@ -247,8 +511,10 @@ end
 function Buffs.receiveData(_buffs)
     Log.Debug("receiveData: %s", Log.isDebug and Azimuth.serialize(_buffs) or '')
     buffsCount = 0
-    buffs = _buffs
-    for _, buff in pairs(buffs) do
+    --buffs = _buffs
+    local newbuffs = {}
+    for fullname, buff in pairs(_buffs) do
+        buff.fullname = fullname
         buffsCount = buffsCount + 1
         -- custom color
         if buff.color then
@@ -265,7 +531,7 @@ function Buffs.receiveData(_buffs)
         if buff.type == 5 then
             buff.icon = "data/textures/icons/buffs/" .. (buff.icon and buff.icon or "Buff") .. ".png"
         else
-            buff.icon = "data/textures/icons/buffs/" .. (buff.icon and buff.icon or stats[buff.stat+1]) .. ".png"
+            buff.icon = "data/textures/icons/buffs/" .. (buff.icon and buff.icon or stats[buff.stat]) .. ".png"
             -- check if it's a debuff, only simple buffs can be detected as positive/negative
             if buff.stat == StatsBonuses.HyperspaceCooldown
               or buff.stat == StatsBonuses.HyperspaceRechargeEnergy
@@ -302,13 +568,31 @@ function Buffs.receiveData(_buffs)
         end
         -- name
         buff.name = buff.name%_t
+        newbuffs[buffsCount] = buff
     end
+    -- sort buffs by priority
+    table.sort(newbuffs, function(a, b)
+        local aprio = a.prio or 0
+        local bprio = b.prio or 0
+        if aprio > bprio then
+            return true
+        elseif aprio == bprio then
+            return a.name < b.name
+        end
+    end)
+    buffs = newbuffs
 end
 
 -- CALLBACKS --
 function Buffs.onRenderHud()
-    if Player().craftIndex ~= Entity().index then return end
+    local player = Player()
+    if player.craftIndex ~= Entity().index then return end
     if buffsCount == 0 then return end
+    if post0_25_2 then
+        if player.state ~= PlayerStateType.Fly and player.state ~= PlayerStateType.Interact then
+            return
+        end
+    end
 
     local renderer = UIRenderer()
     local res = getResolution()
@@ -323,7 +607,7 @@ function Buffs.onRenderHud()
     local orange = vec3(1, 0.5, 0)
     local lightBlue = vec3(0, 0.75, 1)
     local rx, c
-    for k, buff in pairs(buffs) do
+    for _, buff in ipairs(buffs) do
         rx = res.x / 2 + 270 + math.floor(i / 2) * 30
         if rx + 35 > res.x then break end -- can't draw more
         if buff.color then
@@ -410,21 +694,22 @@ local configOptions = {
   LogLevel = {default = 2, min = 0, max = 4, format = "floor", comment = "0 - Disable, 1 - Errors, 2 - Warnings, 3 - Info, 4 - Debug."},
   UpdateInterval = { default = 1, min = 0.1, comment = "How precise system upgrade decay is (smaller = more precise)." }
 }
-local config, isModified = Azimuth.loadConfig("Buffs", configOptions)
+local isModified
+Config, isModified = Azimuth.loadConfig("Buffs", configOptions)
 if isModified then
-    Azimuth.saveConfig("Buffs", config, configOptions)
+    Azimuth.saveConfig("Buffs", Config, configOptions)
 end
-local Log = Azimuth.logs("Buffs", config.LogLevel)
+Log = Azimuth.logs("Buffs", Config.LogLevel)
 
-local data = {
+data = {
   nextKey = 10000,
   freeKeys = {},
   buffs = {}
 }
-local pending = {} -- functions that modders tried to call before `restore`
-local isReady -- immediately true if script was just added, otherwise false until `restore` function
+pending = {} -- functions that modders tried to call before `restore`
+-- local isReady -- immediately true if script was just added, otherwise false until `restore` function
 
-local function getFreeKey(amount) -- Find available keys for stat bonuses
+function Buffs.getFreeKey(amount) -- Find available keys for stat bonuses
     -- single key
     if not amount then
         local key
@@ -459,7 +744,7 @@ local function getFreeKey(amount) -- Find available keys for stat bonuses
 end
 
 function Buffs.getUpdateInterval()
-    return config.UpdateInterval
+    return Config.UpdateInterval
 end
 
 function Buffs.initialize()
@@ -586,6 +871,7 @@ Arguments:
 * descArgs - Table of arguments for description.
 * color - Custom icon and title color, should be an int (example: 0xff0000ff - blue).
 * lowDurationColor - Custom color that will be used in a gradient with previous color when there are < 60 seconds left.
+* priority - Display priority, higher value = earlier in the list
 Returns:
 * true - Added/updated buff
 * false - if applyMode == 1, buff already exists. If applyMode == 4 or 5, buff weren't updated because it doesn't exist
@@ -599,11 +885,11 @@ Buffs.addBuff("Sturdy Build", {
   { type = BuffsHelper.Type.BaseMultiplier, stat = StatsBonuses.EnergyCapacity, value = 0.1 },
 }, -1, BuffsHelper.ApplyMode.Add, false, "SturdyBuild", "Sturdy high-quality craft produced on a\nshipyard in sector ${sector}.", { sector = "(133:425)" })
 ]]
-function Buffs._addBuff(name, effects, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor)
+function Buffs._addBuff(name, effects, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor, priority)
     if not isReady then -- add to pending operations
         pending[#pending+1] = {
           func = "addBuff",
-          args = {name, effects, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor}
+          args = {name, effects, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor, priority}
         }
         return nil, 0
     end
@@ -626,7 +912,7 @@ function Buffs._addBuff(name, effects, duration, applyMode, isAbsoluteDecay, ico
                 keysNeeded = keysNeeded + 1
             end
         end
-        local keys = getFreeKey(keysNeeded)
+        local keys = Buffs.getFreeKey(keysNeeded)
         if not keys then return nil, 2 end -- can't add more than 1000 bonuses
 
         local entity = Entity()
@@ -670,6 +956,7 @@ function Buffs._addBuff(name, effects, duration, applyMode, isAbsoluteDecay, ico
           descArgs = descArgs,
           color = color,
           lowColor = lowDurationColor,
+          prio = priority,
           type = 5
         }
     else
@@ -707,6 +994,7 @@ Arguments:
 * descArgs - Table of arguments for description.
 * color - Custom icon color, should be an int (example: 0xff0000ff - blue).
 * lowDurationColor - Custom color that will be used in a gradient with previous color when there are < 60 seconds left.
+* priority - Display priority, higher value = earlier in the list
 Returns:
 * true - Added/updated buff
 * false - if applyMode == 1, buff already exists. If applyMode == 4 or 5, buff weren't updated because it doesn't exist
@@ -715,11 +1003,11 @@ Returns:
   1 - Names can't contain '.'
   2 - Ran out of keys, can't add more than 1000 bonuses
 ]]
-function Buffs._addBaseMultiplier(name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor)
+function Buffs._addBaseMultiplier(name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor, priority)
     if not isReady then -- add to pending operations
         pending[#pending+1] = {
           func = "addBaseMultiplier",
-          args = {name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor}
+          args = {name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor, priority}
         }
         return nil, 0
     end
@@ -736,7 +1024,7 @@ function Buffs._addBaseMultiplier(name, stat, value, duration, applyMode, isAbso
     if applyMode == 1 and buff then return false end -- already exists
     if applyMode >= 4 and not buff then return false end -- doesn't exist
     if not buff then
-        local key = getFreeKey()
+        local key = Buffs.getFreeKey()
         if not key then return nil, 2 end -- can't add more than 1000 buffs
         data.buffs[fullname] = {
           name = name,
@@ -750,6 +1038,7 @@ function Buffs._addBaseMultiplier(name, stat, value, duration, applyMode, isAbso
           color = color,
           lowColor = lowDurationColor,
           key = key,
+          prio = priority,
           type = 1
         }
         Entity():addKeyedBaseMultiplier(stat, key, value)
@@ -768,11 +1057,11 @@ function Buffs._addBaseMultiplier(name, stat, value, duration, applyMode, isAbso
     return true
 end
 
-function Buffs._addMultiplier(name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor)
+function Buffs._addMultiplier(name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor, priority)
     if not isReady then -- add to pending operations
         pending[#pending+1] = {
           func = "addMultiplier",
-          args = {name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor}
+          args = {name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor, priority}
         }
         return nil, 0
     end
@@ -789,7 +1078,7 @@ function Buffs._addMultiplier(name, stat, value, duration, applyMode, isAbsolute
     if applyMode == 1 and buff then return false end -- already exists
     if applyMode >= 4 and not buff then return false end -- doesn't exist
     if not buff then
-        local key = getFreeKey()
+        local key = Buffs.getFreeKey()
         if not key then return nil, 2 end -- can't add more than 1000 buffs
         data.buffs[fullname] = {
           name = name,
@@ -803,6 +1092,7 @@ function Buffs._addMultiplier(name, stat, value, duration, applyMode, isAbsolute
           color = color,
           lowColor = lowDurationColor,
           key = key,
+          prio = priority,
           type = 2
         }
         Entity():addKeyedMultiplier(stat, key, value)
@@ -821,11 +1111,11 @@ function Buffs._addMultiplier(name, stat, value, duration, applyMode, isAbsolute
     return true
 end
 
-function Buffs._addMultiplyableBias(name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor)
+function Buffs._addMultiplyableBias(name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor, priority)
     if not isReady then -- add to pending operations
         pending[#pending+1] = {
           func = "addMultiplyableBias",
-          args = {name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor}
+          args = {name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor, priority}
         }
         return nil, 0
     end
@@ -842,7 +1132,7 @@ function Buffs._addMultiplyableBias(name, stat, value, duration, applyMode, isAb
     if applyMode == 1 and buff then return false end -- already exists
     if applyMode >= 4 and not buff then return false end -- doesn't exist
     if not buff then
-        local key = getFreeKey()
+        local key = Buffs.getFreeKey()
         if not key then return nil, 2 end -- can't add more than 1000 buffs
         data.buffs[fullname] = {
           name = name,
@@ -856,6 +1146,7 @@ function Buffs._addMultiplyableBias(name, stat, value, duration, applyMode, isAb
           color = color,
           lowColor = lowDurationColor,
           key = key,
+          prio = priority,
           type = 3
         }
         Entity():addKeyedMultiplyableBias(stat, key, value)
@@ -874,11 +1165,11 @@ function Buffs._addMultiplyableBias(name, stat, value, duration, applyMode, isAb
     return true
 end
 
-function Buffs._addAbsoluteBias(name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor)
+function Buffs._addAbsoluteBias(name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor, priority)
     if not isReady then -- add to pending operations
         pending[#pending+1] = {
           func = "addAbsoluteBias",
-          args = {name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor}
+          args = {name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor, priority}
         }
         return nil, 0
     end
@@ -895,7 +1186,7 @@ function Buffs._addAbsoluteBias(name, stat, value, duration, applyMode, isAbsolu
     if applyMode == 1 and buff then return false end -- already exists
     if applyMode >= 4 and not buff then return false end -- doesn't exist
     if not buff then
-        local key = getFreeKey()
+        local key = Buffs.getFreeKey()
         if not key then return nil, 2 end -- can't add more than 1000 buffs
         data.buffs[fullname] = {
           name = name,
@@ -909,6 +1200,7 @@ function Buffs._addAbsoluteBias(name, stat, value, duration, applyMode, isAbsolu
           color = color,
           lowColor = lowDurationColor,
           key = key,
+          prio = priority,
           type = 4
         }
         Entity():addKeyedAbsoluteBias(stat, key, value)

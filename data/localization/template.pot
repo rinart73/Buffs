@@ -1,78 +1,66 @@
-# ========== mods\Buffs\data\scripts\entity\buffs.lua ==========
-#: mods\Buffs\data\scripts\entity\buffs.lua:
+# ========== data\scripts\entity\buffs.lua ==========
+#: data\scripts\entity\buffs.lua:
 msgid "Material Scanner Range"
 msgstr ""
 
-#: mods\Buffs\data\scripts\entity\buffs.lua:
+#: data\scripts\entity\buffs.lua:
 msgid "Time Until Recharge (Depletion)"
 msgstr ""
 
-#: mods\Buffs\data\scripts\entity\buffs.lua:
+#: data\scripts\entity\buffs.lua:
 msgid "Pilots Per Fighter"
 msgstr ""
 
-#: mods\Buffs\data\scripts\entity\buffs.lua:
+#: data\scripts\entity\buffs.lua:
 msgid "Miners Per Turret"
 msgstr ""
 
-#: mods\Buffs\data\scripts\entity\buffs.lua:
+#: data\scripts\entity\buffs.lua:
 msgid "Gunners Per Turret"
 msgstr ""
 
-#: mods\Buffs\data\scripts\entity\buffs.lua:
+#: data\scripts\entity\buffs.lua:
 msgid "Mechanics Per Turret"
 msgstr ""
 
-#: mods\Buffs\data\scripts\entity\buffs.lua:
-msgid "Security"
+#: data\scripts\entity\buffs.lua:
+msgid "Craft Stats"
 msgstr ""
 
-#: mods\Buffs\data\scripts\entity\buffs.lua:
-msgid "Boarders"
+#: data\scripts\entity\buffs.lua:
+msgid "Stat"
 msgstr ""
 
-#: mods\Buffs\data\scripts\entity\buffs.lua:
-msgid "Sergeants"
+#: data\scripts\entity\buffs.lua:
+msgid "Base value"
 msgstr ""
 
-#: mods\Buffs\data\scripts\entity\buffs.lua:
-msgid "Lieutenants"
+#: data\scripts\entity\buffs.lua:
+msgid "Result"
 msgstr ""
 
-#: mods\Buffs\data\scripts\entity\buffs.lua:
-msgid "Commanders"
-msgstr ""
-
-#: mods\Buffs\data\scripts\entity\buffs.lua:
-msgid "Generals"
-msgstr ""
-
-#: mods\Buffs\data\scripts\entity\buffs.lua:
-msgid "Captains"
-msgstr ""
-
-#: mods\Buffs\data\scripts\entity\buffs.lua:
-msgid "%ss"
-msgstr ""
-
-#: mods\Buffs\data\scripts\entity\buffs.lua:
+#: data\scripts\entity\buffs.lua:
 msgid "Permanent"
 msgstr ""
 
 
-# ========== mods\Buffs\data\scripts\lib\BuffsHelper.lua ==========
-#: mods\Buffs\data\scripts\lib\BuffsHelper.lua:
+# ========== data\scripts\lib\BuffsHelper.lua ==========
+#: data\scripts\lib\BuffsHelper.lua:
 msgid "Cargo Destruction"
 msgstr ""
 
-#: mods\Buffs\data\scripts\lib\BuffsHelper.lua:
+#: data\scripts\lib\BuffsHelper.lua:
 msgid "${amount}/s"
 msgstr ""
 
-#: mods\Buffs\data\scripts\lib\BuffsHelper.lua:
+#: data\scripts\lib\BuffsHelper.lua:
 msgid "Crew Dies"
 msgstr ""
 
 
+# ========== data\scripts\lib\BuffsIntegration.lua ==========
+#: data\scripts\lib\BuffsIntegration.lua:
+msgid "High concentration of dust particles prevents\nyour ship sensors from functioning properly.\nWait until sensor recalibration is finished."
+msgstr ""
 
 
