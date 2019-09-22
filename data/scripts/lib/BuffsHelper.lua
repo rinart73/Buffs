@@ -21,23 +21,43 @@ BuffsHelper.ApplyMode = {
 -- API --
 -- For explanation look at 'buffs.lua', line 540+
 function BuffsHelper.addBuff(entity, ...)
-  entity:invokeFunction("data/scripts/entity/buffs.lua", "_addBuff", ...)
+    local status, ret1, ret2 = entity:invokeFunction("data/scripts/entity/buffs.lua", "_addBuff", ...)
+    if status ~= 0 then
+        return nil, status + 10
+    end
+    return ret1, ret2
 end
 
 function BuffsHelper.addBaseMultiplier(entity, ...)
-  entity:invokeFunction("data/scripts/entity/buffs.lua", "_addBaseMultiplier", ...)
+    local status, ret1, ret2 = entity:invokeFunction("data/scripts/entity/buffs.lua", "_addBaseMultiplier", ...)
+    if status ~= 0 then
+        return nil, status + 10
+    end
+    return ret1, ret2
 end
 
 function BuffsHelper.addMultiplier(entity, ...)
-  entity:invokeFunction("data/scripts/entity/buffs.lua", "_addMultiplier", ...)
+    local status, ret1, ret2 = entity:invokeFunction("data/scripts/entity/buffs.lua", "_addMultiplier", ...)
+    if status ~= 0 then
+        return nil, status + 10
+    end
+    return ret1, ret2
 end
 
 function BuffsHelper.addMultiplyableBias(entity, ...)
-  entity:invokeFunction("data/scripts/entity/buffs.lua", "_addMultiplyableBias", ...)
+    local status, ret1, ret2 = entity:invokeFunction("data/scripts/entity/buffs.lua", "_addMultiplyableBias", ...)
+    if status ~= 0 then
+        return nil, status + 10
+    end
+    return ret1, ret2
 end
 
 function BuffsHelper.addAbsoluteBias(entity, ...)
-  entity:invokeFunction("data/scripts/entity/buffs.lua", "_addAbsoluteBias", ...)
+    local status, ret1, ret2 = entity:invokeFunction("data/scripts/entity/buffs.lua", "_addAbsoluteBias", ...)
+    if status ~= 0 then
+        return nil, status + 10
+    end
+    return ret1, ret2
 end
 
 -- CUSTOM EFFECTS --

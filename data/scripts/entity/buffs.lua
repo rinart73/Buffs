@@ -84,11 +84,11 @@ statNames = {
   },
   ScannerReach = {
     name = "Scanner Range"%_t,
-    value = 50 -- 0.5km, check
+    value = 500 -- 5km, check
   },
   ScannerMaterialReach = {
     name = "Material Scanner Range"%_t,
-    value = 50 -- 0.5km, check
+    value = 500 -- 5km, check
   },
   HyperspaceReach = {
     name = "Jump Range"%_t,
@@ -797,22 +797,79 @@ function Buffs.update(timePassed)
 end
 
 function Buffs.secure()
+    local entity = Entity()
+    -- save energy and shield
+    data.shield = entity.shieldDurability
+    if entity:hasComponent(ComponentType.EnergySystem) then
+        data.energy = EnergySystem(entity).energy
+    else
+        data.energy = nil
+    end
+    Log.Debug("Secure: %s (%s): shield %s, energy %s", tostring(entity.name), entity.index.string, tostring(data.shield), tostring(data.energy))
+
     return data
 end
 
 function Buffs.restore(_data)
+    local entity = Entity()
+    Log.Debug("Restore: %s (%s)", tostring(entity.name), entity.index.string)
     data = _data or {
       nextKey = 10000,
       freeKeys = {},
       buffs = {}
     }
     if not isReady then -- check for pending buffs
+        -- reapply old buffs
+        for fullname, buff in pairs(data.buffs) do
+            if buff.type == 1 then
+                entity:addKeyedBaseMultiplier(buff.stat, buff.key, buff.value)
+            elseif buff.type == 2 then
+                entity:addKeyedMultiplier(buff.stat, buff.key, buff.value)
+            elseif buff.type == 3 then
+                entity:addKeyedMultiplyableBias(buff.stat, buff.key, buff.value)
+            elseif buff.type == 4 then
+                entity:addKeyedAbsoluteBias(buff.stat, buff.key, buff.value)
+            elseif buff.type == 5 then
+                for _, effect in ipairs(buff.effects) do
+                    if effect.type == 1 then
+                        entity:addKeyedBaseMultiplier(effect.stat, effect.key, effect.value)
+                    elseif effect.type == 2 then
+                        entity:addKeyedMultiplier(effect.stat, effect.key, effect.value)
+                    elseif effect.type == 3 then
+                        entity:addKeyedMultiplyableBias(effect.stat, effect.key, effect.value)
+                    elseif effect.type == 4 then
+                        entity:addKeyedAbsoluteBias(effect.stat, effect.key, effect.value)
+                    end
+                end
+            end
+        end
+        -- restore shield and energy
+        deferredCallback(0.25, "deferredRestore", data.shield, data.energy)
+        -- apply pending buffs
         isReady = true
         for _, v in ipairs(pending) do
             Buffs[v.func](unpack(v.args))
         end
         pending = nil
         Buffs.refreshData()
+    end
+end
+
+function Buffs.deferredRestore(shield, energy)
+    local entity = Entity()
+    Log.Debug("dataShield: %s, shield: %s, maxShield: %s", tostring(shield), tostring(entity.shieldDurability), tostring(entity.shieldMaxDurability))
+    if shield and entity.shieldMaxDurability then
+        if shield > entity.shieldDurability then
+            entity.shieldDurability = shield
+        end
+    end
+    Log.Debug("dataEnergy: %s", tostring(energy))
+    if energy and entity:hasComponent(ComponentType.EnergySystem) then
+        local energySystem = EnergySystem(entity)
+        Log.Debug("energy: %s, capacity: %s", tostring(energySystem.energy), tostring(energySystem.capacity))
+        if energy > energySystem.energy then
+            energySystem.energy = energy
+        end
     end
 end
 
@@ -879,6 +936,10 @@ Returns:
   0 - You tried to add buff before game called `restore` function. Your request will be processed but you will not be able to get return values.
   1 - Names can't contain '.'
   2 - Ran out of keys, can't add more than 1000 bonuses
+  11 - The call failed because the entity with the specified index does not exist or has no scripting component.
+  12 - The call failed because it came from another sector than the entity is in.
+  13 - The call failed because the given script was not found in the entity.
+  14 - The call failed because the given function was not found in the script.
 Example:
 Buffs.addBuff("Sturdy Build", {
   { type = BuffsHelper.Type.AbsoluteBias, stat = StatsBonuses.CargoHold, value = 50 },
@@ -1002,6 +1063,10 @@ Returns:
   0 - You tried to add buff before game called `restore` function. Your request will be processed but you will not be able to get return values.
   1 - Names can't contain '.'
   2 - Ran out of keys, can't add more than 1000 bonuses
+  11 - The call failed because the entity with the specified index does not exist or has no scripting component.
+  12 - The call failed because it came from another sector than the entity is in.
+  13 - The call failed because the given script was not found in the entity.
+  14 - The call failed because the given function was not found in the script.
 ]]
 function Buffs._addBaseMultiplier(name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor, priority)
     if not isReady then -- add to pending operations
