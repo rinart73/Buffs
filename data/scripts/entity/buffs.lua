@@ -286,6 +286,7 @@ function Buffs.getBonusStatString(type, stat, value, noSign) -- create correct d
             end
         elseif stat == StatsBonuses.FighterCargoPickup or stat == StatsBonuses.ShieldImpenetrable then
             valueStr = value <= 0 and "No"%_t or "Yes"%_t
+            noSign = true
         else
             valueStr = round(value, 2)
         end
@@ -860,7 +861,7 @@ function Buffs.deferredRestore(shield, energy)
     Log.Debug("dataShield: %s, shield: %s, maxShield: %s", tostring(shield), tostring(entity.shieldDurability), tostring(entity.shieldMaxDurability))
     if shield and entity.shieldMaxDurability then
         if shield > entity.shieldDurability then
-            entity.shieldDurability = shield
+            entity.shieldDurability = math.min(shield, entity.shieldMaxDurability)
         end
     end
     Log.Debug("dataEnergy: %s", tostring(energy))
@@ -868,7 +869,7 @@ function Buffs.deferredRestore(shield, energy)
         local energySystem = EnergySystem(entity)
         Log.Debug("energy: %s, capacity: %s", tostring(energySystem.energy), tostring(energySystem.capacity))
         if energy > energySystem.energy then
-            energySystem.energy = energy
+            energySystem.energy = math.min(energy, energySystem.capacity)
         end
     end
 end
@@ -877,18 +878,29 @@ function Buffs.refreshData() -- send data to clients
     if callingPlayer then
         local player = Player(callingPlayer)
         if player.craftIndex == Entity().index then
-            invokeClientFunction(Player(callingPlayer), "receiveData", data.buffs)
+            invokeClientFunction(Player(callingPlayer), "receiveData", Buffs.prepareClientBuffs())
         end
     else -- to all pilots
         local entity = Entity()
         if entity.hasPilot then
+            local clientBuffs = Buffs.prepareClientBuffs()
             for _, playerIndex in ipairs({entity:getPilotIndices()}) do
-                invokeClientFunction(Player(playerIndex), "receiveData", data.buffs)
+                invokeClientFunction(Player(playerIndex), "receiveData", clientBuffs)
             end
         end
     end
 end
 callable(Buffs, "refreshData")
+
+function Buffs.prepareClientBuffs()
+    local clientBuffs = {}
+    for fullname, buff in pairs(data.buffs) do
+        if buff.prio ~= -1000 then -- don't send hidden buffs
+            clientBuffs[fullname] = buff
+        end
+    end
+    return clientBuffs
+end
 
 -- CALLBACKS --
 function Buffs.onRestoredFromDisk(timePassed)
@@ -906,7 +918,7 @@ end
 -- BuffsHelper.addBuff(name, effects [, duration [, applyMode [, isAbsoluteDecay [, icon [, description [, color [, lowDurationColor]]]]]]])
 --[[ Allows to add multiple bonuses within one buff/debuff.
 Arguments:
-* name - Buff name, can't contain '.'
+* name - Buff name, can't contain '.'. If it starts with '_', it's a hidden buff that will not be sent to client side.
 * effects - Table where each element is a table with following properties:
   * type - Bonus type:
     1 - BaseMultiplier
@@ -928,7 +940,7 @@ Arguments:
 * descArgs - Table of arguments for description.
 * color - Custom icon and title color, should be an int (example: 0xff0000ff - blue).
 * lowDurationColor - Custom color that will be used in a gradient with previous color when there are < 60 seconds left.
-* priority - Display priority, higher value = earlier in the list
+* priority (number) - Display priority, higher value = earlier in the list. If '-1000', a buff will not be sent to client.
 Returns:
 * true - Added/updated buff
 * false - if applyMode == 1, buff already exists. If applyMode == 4 or 5, buff weren't updated because it doesn't exist
@@ -949,7 +961,7 @@ Buffs.addBuff("Sturdy Build", {
 function Buffs._addBuff(name, effects, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor, priority)
     if not isReady then -- add to pending operations
         pending[#pending+1] = {
-          func = "addBuff",
+          func = "_addBuff",
           args = {name, effects, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor, priority}
         }
         return nil, 0
@@ -962,6 +974,9 @@ function Buffs._addBuff(name, effects, duration, applyMode, isAbsoluteDecay, ico
         elseif applyMode == 5 then applyMode = 4 end
     end
     local fullname = "B_"..name
+    if string.sub(name, 1, 1) == "_" then -- if a buff name starts with _, it's a hidden buff
+        priority = -1000
+    end
 
     local buff = data.buffs[fullname]
     if applyMode == 1 and buff then return false end -- already exists
@@ -1039,7 +1054,7 @@ end
 -- BuffsHelper.addBaseMultiplier(name, stat, value [, duration [, applyMode [, isAbsoluteDecay [, icon [, description [, color]]]]]])
 --[[ Acts in a similar fashion to 'Entity():addBaseMultiplier'
 Arguments:
-* name - Buff name, can't contain '.'
+* name - Buff name, can't contain '.'. If it starts with '_', it's a hidden buff that will not be sent to client side.
 * stat - Value from StatsBonuses enum
 * value - Bonus value/factor
 * duration - Duration in seconds (default: -1, permanent)
@@ -1055,7 +1070,7 @@ Arguments:
 * descArgs - Table of arguments for description.
 * color - Custom icon color, should be an int (example: 0xff0000ff - blue).
 * lowDurationColor - Custom color that will be used in a gradient with previous color when there are < 60 seconds left.
-* priority - Display priority, higher value = earlier in the list
+* priority (number) - Display priority, higher value = earlier in the list. If -1000, a buff will not be sent to client.
 Returns:
 * true - Added/updated buff
 * false - if applyMode == 1, buff already exists. If applyMode == 4 or 5, buff weren't updated because it doesn't exist
@@ -1071,7 +1086,7 @@ Returns:
 function Buffs._addBaseMultiplier(name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor, priority)
     if not isReady then -- add to pending operations
         pending[#pending+1] = {
-          func = "addBaseMultiplier",
+          func = "_addBaseMultiplier",
           args = {name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor, priority}
         }
         return nil, 0
@@ -1084,6 +1099,9 @@ function Buffs._addBaseMultiplier(name, stat, value, duration, applyMode, isAbso
         elseif applyMode == 5 then applyMode = 4 end
     end
     local fullname = "BM_"..name
+    if string.sub(name, 1, 1) == "_" then -- if a buff name starts with _, it's a hidden buff
+        priority = -1000
+    end
 
     local buff = data.buffs[fullname]
     if applyMode == 1 and buff then return false end -- already exists
@@ -1125,7 +1143,7 @@ end
 function Buffs._addMultiplier(name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor, priority)
     if not isReady then -- add to pending operations
         pending[#pending+1] = {
-          func = "addMultiplier",
+          func = "_addMultiplier",
           args = {name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor, priority}
         }
         return nil, 0
@@ -1138,6 +1156,9 @@ function Buffs._addMultiplier(name, stat, value, duration, applyMode, isAbsolute
         elseif applyMode == 5 then applyMode = 4 end
     end
     local fullname = "M_"..name
+    if string.sub(name, 1, 1) == "_" then -- if a buff name starts with _, it's a hidden buff
+        priority = -1000
+    end
 
     local buff = data.buffs[fullname]
     if applyMode == 1 and buff then return false end -- already exists
@@ -1179,7 +1200,7 @@ end
 function Buffs._addMultiplyableBias(name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor, priority)
     if not isReady then -- add to pending operations
         pending[#pending+1] = {
-          func = "addMultiplyableBias",
+          func = "_addMultiplyableBias",
           args = {name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor, priority}
         }
         return nil, 0
@@ -1192,6 +1213,9 @@ function Buffs._addMultiplyableBias(name, stat, value, duration, applyMode, isAb
         elseif applyMode == 5 then applyMode = 4 end
     end
     local fullname = "MB_"..name
+    if string.sub(name, 1, 1) == "_" then -- if a buff name starts with _, it's a hidden buff
+        priority = -1000
+    end
 
     local buff = data.buffs[fullname]
     if applyMode == 1 and buff then return false end -- already exists
@@ -1233,7 +1257,7 @@ end
 function Buffs._addAbsoluteBias(name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor, priority)
     if not isReady then -- add to pending operations
         pending[#pending+1] = {
-          func = "addAbsoluteBias",
+          func = "_addAbsoluteBias",
           args = {name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor, priority}
         }
         return nil, 0
@@ -1246,6 +1270,9 @@ function Buffs._addAbsoluteBias(name, stat, value, duration, applyMode, isAbsolu
         elseif applyMode == 5 then applyMode = 4 end
     end
     local fullname = "AB_"..name
+    if string.sub(name, 1, 1) == "_" then -- if a buff name starts with _, it's a hidden buff
+        priority = -1000
+    end
 
     local buff = data.buffs[fullname]
     if applyMode == 1 and buff then return false end -- already exists
