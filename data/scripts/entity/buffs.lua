@@ -11,7 +11,7 @@ Buffs = {}
 local buffPrefixes = {"BM_", "M_", "MB_", "AB_", "_B"}
 local statLabels = {}
 local buffDescriptions, Config, Log, stats, uiStats, statNames, customEffects, buffs, buffsCount, hoveredBuffTooltip, prevHoveredName, distanceString, post0_25_2
-local data, pending, isReady
+local data, pending, isReady, debugName
 
 if onClient() then
 
@@ -750,12 +750,19 @@ end
 
 function Buffs.initialize()
     local entity = Entity()
+    savedEntity = entity
+    debugName = (entity.title or "") .. " - " .. (entity.name or "")
     -- if script was just added, it will not have 
     isReady = entity:getValue("Buffs") == nil
     if isReady then
         entity:setValue("Buffs", true)
     end
+    entity:registerCallback("onSectorEntered", "onSectorEntered")
     Sector():registerCallback("onRestoredFromDisk", "onRestoredFromDisk")
+end
+
+function Buffs.onSectorEntered()
+    savedEntity = Entity()
 end
 
 function Buffs.onRemove()
@@ -798,15 +805,21 @@ function Buffs.update(timePassed)
 end
 
 function Buffs.secure()
-    local entity = Entity()
+    -- attempting to fix an error
+    if not savedEntity or not valid(savedEntity) then
+        Log.Info("Secure - entity '%s' is nil or invalid", debugName)
+        data.shield = nil
+        data.energy = nil
+        return data
+    end
     -- save energy and shield
-    data.shield = entity.shieldDurability
-    if entity:hasComponent(ComponentType.EnergySystem) then
-        data.energy = EnergySystem(entity).energy
+    data.shield = savedEntity.shieldDurability
+    if savedEntity:hasComponent(ComponentType.EnergySystem) then
+        data.energy = EnergySystem(savedEntity).energy
     else
         data.energy = nil
     end
-    Log.Debug("Secure: %s (%s): shield %s, energy %s", tostring(entity.name), entity.index.string, tostring(data.shield), tostring(data.energy))
+    Log.Debug("Secure: %s (%s): shield %s, energy %s", tostring(savedEntity.name), savedEntity.index.string, tostring(data.shield), tostring(data.energy))
 
     return data
 end
