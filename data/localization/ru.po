@@ -1,50 +1,45 @@
-# ========== data\scripts\entity\buffs.lua ==========
-#: data\scripts\entity\buffs.lua:
+# ========== data\scripts\lib\BuffsHelper.lua ==========
+#: data\scripts\lib\BuffsHelper.lua:
 msgid "Material Scanner Range"
 msgstr "Радиус сканирования астероидов"
 
-#: data\scripts\entity\buffs.lua:
+#: data\scripts\lib\BuffsHelper.lua:
 msgid "Time Until Recharge (Depletion)"
 msgstr "Время перезарядки после истощения"
 
-#: data\scripts\entity\buffs.lua:
+#: data\scripts\lib\BuffsHelper.lua:
 msgid "Pilots Per Fighter"
 msgstr "Пилотов на истребитель"
 
-#: data\scripts\entity\buffs.lua:
+#: data\scripts\lib\BuffsHelper.lua:
 msgid "Miners Per Turret"
 msgstr "Рудокопов на турель"
 
-#: data\scripts\entity\buffs.lua:
+#: data\scripts\lib\BuffsHelper.lua:
 msgid "Gunners Per Turret"
 msgstr "Наводчиков на турель"
 
-#: data\scripts\entity\buffs.lua:
+#: data\scripts\lib\BuffsHelper.lua:
 msgid "Mechanics Per Turret"
 msgstr "Механиков на турель"
 
-#: data\scripts\entity\buffs.lua:
-msgid "Craft Stats"
-msgstr "Характеристики"
+#: data\scripts\lib\BuffsHelper.lua:
+msgid "${days}d ${hours}h"
+msgstr "${days}д ${hours}ч"
 
-#: data\scripts\entity\buffs.lua:
-msgid "Stat"
-msgstr "Хар-ка"
+#: data\scripts\lib\BuffsHelper.lua:
+msgid "${hours}h ${minutes}m"
+msgstr "${hours}ч ${minutes}м"
 
-#: data\scripts\entity\buffs.lua:
-msgid "Base value"
-msgstr "Базовое зн."
+#: data\scripts\lib\BuffsHelper.lua:
+msgid "${minutes}m ${seconds}s"
+msgstr "${minutes}м ${seconds}с"
 
-#: data\scripts\entity\buffs.lua:
-msgid "Result"
-msgstr "Итоговое зн."
-
-#: data\scripts\entity\buffs.lua:
+#: data\scripts\lib\BuffsHelper.lua:
+#: data\scripts\player\buffs.lua:
 msgid "Permanent"
 msgstr "Постоянный"
 
-
-# ========== data\scripts\lib\BuffsHelper.lua ==========
 #: data\scripts\lib\BuffsHelper.lua:
 msgid "Cargo Destruction"
 msgstr "Уничтожение грузов"
@@ -56,5 +51,35 @@ msgstr "${amount}/с"
 #: data\scripts\lib\BuffsHelper.lua:
 msgid "Crew Dies"
 msgstr "Экипаж умирает"
+
+
+# ========== data\scripts\player\buffs.lua ==========
+#: data\scripts\player\buffs.lua:
+msgid "Buffs & Stats"
+msgstr "Баффы и хар-ки"
+
+#: data\scripts\player\buffs.lua:
+msgid "Buffs & Stats"
+msgstr "Баффы и хар-ки"
+
+#: data\scripts\player\buffs.lua:
+msgid "Stat"
+msgstr "Хар-ка"
+
+#: data\scripts\player\buffs.lua:
+msgid "Base value"
+msgstr "Базовое зн."
+
+#: data\scripts\player\buffs.lua:
+msgid "Result"
+msgstr "Итоговое зн."
+
+#: data\scripts\player\buffs.lua:
+msgid "Hide buffs icons overlay"
+msgstr "Скрыть оверлей с иконками баффов"
+
+#: data\scripts\player\buffs.lua:
+msgid "Duration"
+msgstr "Длительность"
 
 

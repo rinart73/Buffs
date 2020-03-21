@@ -29,7 +29,7 @@ function DestroyCargoBuff.getUpdateInterval()
     return data and data.frequency or 1
 end
 
-function DestroyCargoBuff.update()
+function DestroyCargoBuff.updateParallelSelf()
     if not data then return end -- we CAN'T terminate buffs even if arguments are wrong - this will mess up other scripts!
 
     Entity():destroyCargo(data.volume)

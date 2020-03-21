@@ -1,0 +1,1767 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Buffs API Docs</title>
+    <link rel="stylesheet" href="ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Buffs</h1>
+
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+<li><a href="#Callbacks">Callbacks</a></li>
+<li><a href="#Local_Functions">Local Functions</a></li>
+<li><a href="#Built_in_Custom_Stats">Built-in Custom Stats</a></li>
+<li><a href="#Built_in_Custom_Scripts">Built-in Custom Scripts</a></li>
+<li><a href="#Enums">Enums</a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><strong>BuffsHelper</strong></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>BuffsHelper</code></h1>
+<p>A helper file for the Buffs mod.</p>
+<p>
+
+</p>
+    <h3>Info:</h3>
+    <ul>
+        <li><strong>Release</strong>: 0.3</li>
+        <li><strong>License</strong>: MIT</li>
+        <li><strong>Author</strong>: Rinart73</li>
+    </ul>
+
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" ><a href="#addAbsoluteBias">addAbsoluteBias (object, name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor, priority)</a></td>
+	<td class="summary">Has the same arguments and return values as the addBaseMultiplier function but manipulates AbsoluteBias instead</td>
+	</tr>
+	<tr>
+	<td class="name" ><a href="#addBaseMultiplier">addBaseMultiplier (object, name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor, priority)</a></td>
+	<td class="summary">Acts in a similar fashion to 'Entity():addBaseMultiplier', adding a simple vanilla stat buff.</td>
+	</tr>
+	<tr>
+	<td class="name" ><a href="#addBuff">addBuff (object, name, effects, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor, priority)</a></td>
+	<td class="summary">Adds a complex buff that can include multiple stat bonuses, custom stats and custom scripts.</td>
+	</tr>
+	<tr>
+	<td class="name" ><a href="#addMultiplier">addMultiplier (object, name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor, priority)</a></td>
+	<td class="summary">Has the same arguments and return values as the addBaseMultiplier function but manipulates Multiplier instead</td>
+	</tr>
+	<tr>
+	<td class="name" ><a href="#addMultiplyableBias">addMultiplyableBias (object, name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor, priority)</a></td>
+	<td class="summary">Has the same arguments and return values as the addBaseMultiplier function but manipulates MultiplyableBias instead</td>
+	</tr>
+	<tr>
+	<td class="name" ><a href="#getBuff">getBuff (object, name, type)</a></td>
+	<td class="summary">Returns specified buff.</td>
+	</tr>
+	<tr>
+	<td class="name" ><a href="#getBuffs">getBuffs (object)</a></td>
+	<td class="summary">Returns all buffs as a table.</td>
+	</tr>
+	<tr>
+	<td class="name" ><a href="#isReady">isReady (object)</a></td>
+	<td class="summary">Returns true/false depending on if mod is ready to apply buffs without delaying them (pending)</td>
+	</tr>
+	<tr>
+	<td class="name" ><a href="#removeAbsoluteBias">removeAbsoluteBias (object, name)</a></td>
+	<td class="summary">Has the same arguments and return values as the removeBaseMultiplier function but removes AbsoluteBias instead</td>
+	</tr>
+	<tr>
+	<td class="name" ><a href="#removeBaseMultiplier">removeBaseMultiplier (object, name)</a></td>
+	<td class="summary">Removes Base Multiplier from a specified object</td>
+	</tr>
+	<tr>
+	<td class="name" ><a href="#removeBuff">removeBuff (object, name)</a></td>
+	<td class="summary">Removes a complex buff from a specified object</td>
+	</tr>
+	<tr>
+	<td class="name" ><a href="#removeBuffWithType">removeBuffWithType (object, name, buffType)</a></td>
+	<td class="summary">Removes a buff of a certain type from a specified object</td>
+	</tr>
+	<tr>
+	<td class="name" ><a href="#removeMultiplier">removeMultiplier (object, name)</a></td>
+	<td class="summary">Has the same arguments and return values as the removeBaseMultiplier function but removes Multiplier instead</td>
+	</tr>
+	<tr>
+	<td class="name" ><a href="#removeMultiplyableBias">removeMultiplyableBias (object, name)</a></td>
+	<td class="summary">Has the same arguments and return values as the removeBaseMultiplier function but removes MultiplyableBias instead</td>
+	</tr>
+</table>
+<h2><a href="#Callbacks">Callbacks</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" ><a href="#onBuffApplied">onBuffApplied</a></td>
+	<td class="summary">Fires after a buff of any kind was applied.</td>
+	</tr>
+	<tr>
+	<td class="name" ><a href="#onBuffRemoved">onBuffRemoved</a></td>
+	<td class="summary">Fires after a buff was removed (via script or via natural duration decay).</td>
+	</tr>
+	<tr>
+	<td class="name" ><a href="#onBuffsReady">onBuffsReady</a></td>
+	<td class="summary">Fires after 'restore' signalizing that mod is ready to process requests without delays.</td>
+	</tr>
+</table>
+<h2><a href="#Local_Functions">Local Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" ><a href="#addScript">addScript</a></td>
+	<td class="summary">Adds custom script effect for client and server.</td>
+	</tr>
+	<tr>
+	<td class="name" ><a href="#addStat">addStat</a></td>
+	<td class="summary">Adds custom stat effect for client and server.</td>
+	</tr>
+</table>
+<h2><a href="#Built_in_Custom_Stats">Built-in Custom Stats</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" ><a href="#ChangeValue">ChangeValue</a></td>
+	<td class="summary">Allows to increase/decrease object values via 'setValue'/'getValue'.</td>
+	</tr>
+	<tr>
+	<td class="name" ><a href="#DamageMultiplier">DamageMultiplier</a></td>
+	<td class="summary">Increases/decreases all incoming damage.</td>
+	</tr>
+	<tr>
+	<td class="name" ><a href="#HullDurability">HullDurability</a></td>
+	<td class="summary">Increases/decreases hull durability multiplier.</td>
+	</tr>
+	<tr>
+	<td class="name" ><a href="#SetValue">SetValue</a></td>
+	<td class="summary">Allows to set object values via 'setValue'/'getValue'.</td>
+	</tr>
+</table>
+<h2><a href="#Built_in_Custom_Scripts">Built-in Custom Scripts</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" ><a href="#ChangeDurability">ChangeDurability</a></td>
+	<td class="summary">Changes hull durability by 'amount' every 'frequency' seconds.</td>
+	</tr>
+	<tr>
+	<td class="name" ><a href="#ChangeShield">ChangeShield</a></td>
+	<td class="summary">Changes shield durability by 'amount' every 'frequency' seconds.</td>
+	</tr>
+	<tr>
+	<td class="name" ><a href="#CollisionDamage">CollisionDamage</a></td>
+	<td class="summary">Inflicts extra damage to other ship on collision.</td>
+	</tr>
+	<tr>
+	<td class="name" ><a href="#DestroyCargo">DestroyCargo</a></td>
+	<td class="summary">Destroys random cargo 'volume' every 'frequency' seconds.</td>
+	</tr>
+	<tr>
+	<td class="name" ><a href="#KillCrew">KillCrew</a></td>
+	<td class="summary">Kills 'amount' random crew members every 'frequency' seconds.</td>
+	</tr>
+</table>
+<h2><a href="#Enums">Enums</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" ><a href="#Mode">Mode</a></td>
+	<td class="summary">Buff apply mode.</td>
+	</tr>
+	<tr>
+	<td class="name" ><a href="#Target">Target</a></td>
+	<td class="summary">Buff target.</td>
+	</tr>
+	<tr>
+	<td class="name" ><a href="#Type">Type</a></td>
+	<td class="summary">Buff type.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "addAbsoluteBias"></a>
+    <strong>addAbsoluteBias (object, name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor, priority)</strong>
+    </dt>
+    <dd>
+    Has the same arguments and return values as the addBaseMultiplier function but manipulates AbsoluteBias instead
+
+    <h3 class="ctag_title_Server-side">Server-side:</h3>
+    <ul class="ctag-list_Server-side">
+         This function is only available on the server.
+    </ul>
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">object</span>
+            <span class="types"><span class="type">Player/Entity</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">name</span>
+            <span class="types"><span class="type">string</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">stat</span>
+            <span class="types"><span class="type">StatsBonuses</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">value</span>
+            <span class="types"><span class="type">float</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">duration</span>
+            <span class="types"><span class="type">float</span></span>
+         <em>(optional)</em>
+        </li>
+        <li><span class="parameter">applyMode</span>
+            <span class="types"><a class="type" href="BuffsHelper.html#Mode">Mode</a></span>
+         <em>(optional)</em>
+        </li>
+        <li><span class="parameter">isAbsoluteDecay</span>
+            <span class="types"><span class="type">boolean</span></span>
+         <em>(optional)</em>
+        </li>
+        <li><span class="parameter">icon</span>
+            <span class="types"><span class="type">string</span></span>
+         <em>(optional)</em>
+        </li>
+        <li><span class="parameter">description</span>
+            <span class="types"><span class="type">string</span></span>
+         <em>(optional)</em>
+        </li>
+        <li><span class="parameter">descArgs</span>
+            <span class="types"><span class="type">table</span></span>
+         <em>(optional)</em>
+        </li>
+        <li><span class="parameter">color</span>
+            <span class="types"><span class="type">Color</span></span>
+         <em>(optional)</em>
+        </li>
+        <li><span class="parameter">lowDurationColor</span>
+            <span class="types"><span class="type">Color</span></span>
+         <em>(optional)</em>
+        </li>
+        <li><span class="parameter">priority</span>
+            <span class="types"><span class="type">int</span></span>
+         <em>(optional)</em>
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "addBaseMultiplier"></a>
+    <strong>addBaseMultiplier (object, name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor, priority)</strong>
+    </dt>
+    <dd>
+    Acts in a similar fashion to 'Entity():addBaseMultiplier', adding a simple vanilla stat buff.
+
+    <h3 class="ctag_title_Server-side">Server-side:</h3>
+    <ul class="ctag-list_Server-side">
+         This function is only available on the server.
+    </ul>
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">object</span>
+            <span class="types"><span class="type">Player/Entity</span></span>
+         — Buff target
+        </li>
+        <li><span class="parameter">name</span>
+            <span class="types"><span class="type">string</span></span>
+         — Buff name, can't contain dots; If it starts with an underscore, the buff will be hidden (will not be sent to client side)
+        </li>
+        <li><span class="parameter">stat</span>
+            <span class="types"><span class="type">StatsBonuses</span></span>
+         — Stat index
+        </li>
+        <li><span class="parameter">value</span>
+            <span class="types"><span class="type">float</span></span>
+         — Bonus value/factor
+        </li>
+        <li><span class="parameter">duration</span>
+            <span class="types"><span class="type">float</span></span>
+         <em>(optional)</em> — Duration in seconds (default: -1 = permanent)
+        </li>
+        <li><span class="parameter">applyMode</span>
+            <span class="types"><a class="type" href="BuffsHelper.html#Mode">Mode</a></span>
+         <em>(optional)</em> — Apply mode (default: 1 = Mode.Add)
+        </li>
+        <li><span class="parameter">isAbsoluteDecay</span>
+            <span class="types"><span class="type">boolean</span></span>
+         <em>(optional)</em> — If true, buff will decay even while sector with ship is unloaded (default: false). Note: Player-attached buffs cannot have this argument set to 'true'
+        </li>
+        <li><span class="parameter">icon</span>
+            <span class="types"><span class="type">string</span></span>
+         <em>(optional)</em> — Icon name. Icon should be in the "data/textures/icons/buffs/" folder (default: "Buff")
+        </li>
+        <li><span class="parameter">description</span>
+            <span class="types"><span class="type">string</span></span>
+         <em>(optional)</em> — Buff description, long descriptions should be separated into lines with '\n'. I advise to register your descriptions in the "BuffsIntegration.lua" instead
+        </li>
+        <li><span class="parameter">descArgs</span>
+            <span class="types"><span class="type">table</span></span>
+         <em>(optional)</em> — Table of arguments for description
+        </li>
+        <li><span class="parameter">color</span>
+            <span class="types"><span class="type">Color</span></span>
+         <em>(optional)</em> — Custom icon and title color, should be an int (example: 0xff0000ff - blue)
+        </li>
+        <li><span class="parameter">lowDurationColor</span>
+            <span class="types"><span class="type">Color</span></span>
+         <em>(optional)</em> — Custom color that will be used in a gradient with previous color when there are &lt; 60 seconds left
+        </li>
+        <li><span class="parameter">priority</span>
+            <span class="types"><span class="type">int</span></span>
+         <em>(optional)</em> — Display priority, higher value = earlier in the list; If it's -1000, a buff will be hidden abd won't be sent to client (default: 0)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">var</span></span>
+
+<p> result</p>
+
+<ul>
+    <li>true - Successfully added/updated buff</li>
+    <li>false - If applyMode = 1, buff already exists. If applyMode is 4 or 5, buff wasn't updated because it doesn't exist</li>
+    <li>nil - Error, look at the second return value</li>
+</ul>
+</li>
+        <li>
+           <span class="types"><span class="type">int</span></span>
+
+<p> errorCode</p>
+
+<ul>
+    <li>0 - You tried to add buff before game called <code>restore</code> function. Your request will be processed later and you will not be able to get return values</li>
+    <li>1 - Names can't contain '.'</li>
+    <li>2 - Ran out of keys, can't add more than 1000 bonuses</li>
+    <li>11 - The call failed because the object with the specified index does not exist or has no scripting component</li>
+    <li>12 - The call failed because it came from another sector than the object is in</li>
+    <li>13 - The call failed because the given script was not found in the object</li>
+    <li>14 - The call failed because the given function was not found in the script</li>
+    <li>15 - The call failed because the script's state has errors and is invalid</li>
+</ul>
+</li>
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">BuffsHelper.addBaseMultiplier(ship, <span class="string">"Faster Than Light"</span>%_T, StatBonuses.HyperspaceReach, <span class="number">5</span>, <span class="number">60</span>, BuffsHelper.Mode.Add, <span class="keyword">false</span>, <span class="string">"FasterThanLight"</span>,
+  <span class="string">"Your jump drive is boosted for a short time."</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "addBuff"></a>
+    <strong>addBuff (object, name, effects, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor, priority)</strong>
+    </dt>
+    <dd>
+    Adds a complex buff that can include multiple stat bonuses, custom stats and custom scripts.
+
+    <h3 class="ctag_title_Server-side">Server-side:</h3>
+    <ul class="ctag-list_Server-side">
+         This function is only available on the server.
+    </ul>
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">object</span>
+            <span class="types"><span class="type">Player/Entity</span></span>
+         — Buff target
+        </li>
+        <li><span class="parameter">name</span>
+            <span class="types"><span class="type">string</span></span>
+         — Buff name, can't contain dots; If it starts with an underscore, the buff will be hidden (will not be sent to client side)
+        </li>
+        <li><span class="parameter">effects</span>
+            <span class="types"><span class="type">table</span></span>
+
+<p> — Table where each element can be either a vanilla bonus, custom stat or custom script. For custom scripts and stats use BuffsHelper.Scripts.Name:New/NewTarget(...) and BuffsHelper.Stats.Name:New/NewTarget(...). For vanilla bonus pass a table with following values:</p>
+
+<ul>
+    <li>BuffsHelper.Type type</li>
+    <li>StatsBonuses stat</li>
+    <li>float value</li>
+</ul>
+
+        </li>
+        <li><span class="parameter">duration</span>
+            <span class="types"><span class="type">float</span></span>
+         <em>(optional)</em> — Duration in seconds (default: -1 = permanent)
+        </li>
+        <li><span class="parameter">applyMode</span>
+            <span class="types"><a class="type" href="BuffsHelper.html#Mode">Mode</a></span>
+         <em>(optional)</em> — Apply mode (default: 1 = Mode.Add)
+        </li>
+        <li><span class="parameter">isAbsoluteDecay</span>
+            <span class="types"><span class="type">boolean</span></span>
+         <em>(optional)</em> — If true, buff will decay even while sector with ship is unloaded (default: false). Note: Player-attached buffs cannot have this argument set to 'true'
+        </li>
+        <li><span class="parameter">icon</span>
+            <span class="types"><span class="type">string</span></span>
+         <em>(optional)</em> — Icon name. Icon should be in the "data/textures/icons/buffs/" folder (default: "Buff")
+        </li>
+        <li><span class="parameter">description</span>
+            <span class="types"><span class="type">string</span></span>
+         <em>(optional)</em> — Buff description, long descriptions should be separated into lines with '\n'. I advise to register your descriptions in the "BuffsIntegration.lua" instead
+        </li>
+        <li><span class="parameter">descArgs</span>
+            <span class="types"><span class="type">table</span></span>
+         <em>(optional)</em> — Table of arguments for description
+        </li>
+        <li><span class="parameter">color</span>
+            <span class="types"><span class="type">Color</span></span>
+         <em>(optional)</em> — Custom icon and title color, should be an int (example: 0xff0000ff - blue)
+        </li>
+        <li><span class="parameter">lowDurationColor</span>
+            <span class="types"><span class="type">Color</span></span>
+         <em>(optional)</em> — Custom color that will be used in a gradient with previous color when there are &lt; 60 seconds left
+        </li>
+        <li><span class="parameter">priority</span>
+            <span class="types"><span class="type">int</span></span>
+         <em>(optional)</em> — Display priority, higher value = earlier in the list; If it's -1000, a buff will be hidden abd won't be sent to client (default: 0)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">var</span></span>
+
+<p> result</p>
+
+<ul>
+    <li>true - Successfully added/updated buff</li>
+    <li>false - If applyMode = 1, buff already exists. If applyMode is 4 or 5, buff wasn't updated because it doesn't exist</li>
+    <li>nil - Error, look at the second return value</li>
+</ul>
+</li>
+        <li>
+           <span class="types"><span class="type">int</span></span>
+
+<p> errorCode</p>
+
+<ul>
+    <li>0 - You tried to add buff before game called <code>restore</code> function. Your request will be processed later and you will not be able to get return values</li>
+    <li>1 - Names can't contain '.'</li>
+    <li>2 - Ran out of keys, can't add more than 1000 bonuses</li>
+    <li>11 - The call failed because the object with the specified index does not exist or has no scripting component</li>
+    <li>12 - The call failed because it came from another sector than the object is in</li>
+    <li>13 - The call failed because the given script was not found in the object</li>
+    <li>14 - The call failed because the given function was not found in the script</li>
+    <li>15 - The call failed because the script's state has errors and is invalid</li>
+</ul>
+</li>
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <li><pre class="example">BuffsHelper.addBuff(ship, <span class="string">"Sturdy Build"</span>%_T, {
+    { BuffsHelper.Type.AbsoluteBias, StatsBonuses.CargoHold, <span class="number">50</span> },
+    { BuffsHelper.Type.BaseMultiplier, StatsBonuses.EnergyCapacity, <span class="number">0.1</span> },
+    BuffsHelper.Scripts.ChangeDurability:New(<span class="number">20</span>, <span class="number">5</span>),
+    BuffsHelper.Stats.HullDurability:New(<span class="number">0.5</span>)
+  }, -<span class="number">1</span>, BuffsHelper.Mode.Add, <span class="keyword">false</span>, <span class="string">"SturdyBuild"</span>,
+  <span class="string">"Sturdy high-quality craft produced on a\nshipyard in the sector ${sector}."</span>,
+  { sector = <span class="string">"(133:425)"</span> })</pre></li>
+        <li><pre class="example">BuffsHelper.addBuff(player, <span class="string">"Inspired"</span>%_T, {
+    { BuffsHelper.Type.BaseMultiplier, StatsBonuses.HyperspaceCooldown, -<span class="number">0.1</span> },
+    BuffsHelper.Stats.SetValue:NewTarget(BuffsHelper.Target.Both, <span class="string">"is_inspired"</span>, <span class="keyword">true</span>)
+  }, <span class="number">60</span> * <span class="number">10</span>, BuffsHelper.Mode.AddOrRefresh, <span class="keyword">false</span>, <span class="string">"Inspired"</span>,
+  <span class="string">"You feel a rush of inspiration, engage towards new discoveries!"</span>)</pre></li>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "addMultiplier"></a>
+    <strong>addMultiplier (object, name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor, priority)</strong>
+    </dt>
+    <dd>
+    Has the same arguments and return values as the addBaseMultiplier function but manipulates Multiplier instead
+
+    <h3 class="ctag_title_Server-side">Server-side:</h3>
+    <ul class="ctag-list_Server-side">
+         This function is only available on the server.
+    </ul>
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">object</span>
+            <span class="types"><span class="type">Player/Entity</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">name</span>
+            <span class="types"><span class="type">string</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">stat</span>
+            <span class="types"><span class="type">StatsBonuses</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">value</span>
+            <span class="types"><span class="type">float</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">duration</span>
+            <span class="types"><span class="type">float</span></span>
+         <em>(optional)</em>
+        </li>
+        <li><span class="parameter">applyMode</span>
+            <span class="types"><a class="type" href="BuffsHelper.html#Mode">Mode</a></span>
+         <em>(optional)</em>
+        </li>
+        <li><span class="parameter">isAbsoluteDecay</span>
+            <span class="types"><span class="type">boolean</span></span>
+         <em>(optional)</em>
+        </li>
+        <li><span class="parameter">icon</span>
+            <span class="types"><span class="type">string</span></span>
+         <em>(optional)</em>
+        </li>
+        <li><span class="parameter">description</span>
+            <span class="types"><span class="type">string</span></span>
+         <em>(optional)</em>
+        </li>
+        <li><span class="parameter">descArgs</span>
+            <span class="types"><span class="type">table</span></span>
+         <em>(optional)</em>
+        </li>
+        <li><span class="parameter">color</span>
+            <span class="types"><span class="type">Color</span></span>
+         <em>(optional)</em>
+        </li>
+        <li><span class="parameter">lowDurationColor</span>
+            <span class="types"><span class="type">Color</span></span>
+         <em>(optional)</em>
+        </li>
+        <li><span class="parameter">priority</span>
+            <span class="types"><span class="type">int</span></span>
+         <em>(optional)</em>
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "addMultiplyableBias"></a>
+    <strong>addMultiplyableBias (object, name, stat, value, duration, applyMode, isAbsoluteDecay, icon, description, descArgs, color, lowDurationColor, priority)</strong>
+    </dt>
+    <dd>
+    Has the same arguments and return values as the addBaseMultiplier function but manipulates MultiplyableBias instead
+
+    <h3 class="ctag_title_Server-side">Server-side:</h3>
+    <ul class="ctag-list_Server-side">
+         This function is only available on the server.
+    </ul>
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">object</span>
+            <span class="types"><span class="type">Player/Entity</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">name</span>
+            <span class="types"><span class="type">string</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">stat</span>
+            <span class="types"><span class="type">StatsBonuses</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">value</span>
+            <span class="types"><span class="type">float</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">duration</span>
+            <span class="types"><span class="type">float</span></span>
+         <em>(optional)</em>
+        </li>
+        <li><span class="parameter">applyMode</span>
+            <span class="types"><a class="type" href="BuffsHelper.html#Mode">Mode</a></span>
+         <em>(optional)</em>
+        </li>
+        <li><span class="parameter">isAbsoluteDecay</span>
+            <span class="types"><span class="type">boolean</span></span>
+         <em>(optional)</em>
+        </li>
+        <li><span class="parameter">icon</span>
+            <span class="types"><span class="type">string</span></span>
+         <em>(optional)</em>
+        </li>
+        <li><span class="parameter">description</span>
+            <span class="types"><span class="type">string</span></span>
+         <em>(optional)</em>
+        </li>
+        <li><span class="parameter">descArgs</span>
+            <span class="types"><span class="type">table</span></span>
+         <em>(optional)</em>
+        </li>
+        <li><span class="parameter">color</span>
+            <span class="types"><span class="type">Color</span></span>
+         <em>(optional)</em>
+        </li>
+        <li><span class="parameter">lowDurationColor</span>
+            <span class="types"><span class="type">Color</span></span>
+         <em>(optional)</em>
+        </li>
+        <li><span class="parameter">priority</span>
+            <span class="types"><span class="type">int</span></span>
+         <em>(optional)</em>
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "getBuff"></a>
+    <strong>getBuff (object, name, type)</strong>
+    </dt>
+    <dd>
+    Returns specified buff.
+
+    </ul>
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">object</span>
+            <span class="types"><span class="type">Player/Entity</span></span>
+         — Entity if it's an entity buff or Player if it's a player buff
+        </li>
+        <li><span class="parameter">name</span>
+            <span class="types"><span class="type">string</span></span>
+         — Buff name
+        </li>
+        <li><span class="parameter">type</span>
+            <span class="types"><a class="type" href="BuffsHelper.html#Type">Type</a></span>
+         <em>(optional)</em> — Buff type. 'nil' means 'any type' (default: nil)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">var</span></span>
+
+<p> result</p>
+
+<ul>
+    <li>table - Buff table</li>
+    <li>nil - Couldn't find a buff or you called the function before game called <code>restore</code></li>
+</ul>
+</li>
+        <li>
+           <span class="types"><span class="type">var</span></span>
+
+<p> errorCode</p>
+
+<ul>
+    <li>nil - Everything is fine.</li>
+    <li>0 - You called the function before game called <code>restore</code>, that's why the first argument is an empty table</li>
+    <li>1 - Names can't contain '.'</li>
+    <li>11 - The call failed because the object with the specified index does not exist or has no scripting component</li>
+    <li>12 - The call failed because it came from another sector than the object is in</li>
+    <li>13 - The call failed because the given script was not found in the object</li>
+    <li>14 - The call failed because the given function was not found in the script</li>
+    <li>15 - The call failed because the script's state has errors and is invalid</li>
+</ul>
+</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "getBuffs"></a>
+    <strong>getBuffs (object)</strong>
+    </dt>
+    <dd>
+    Returns all buffs as a table.  If called before <code>restore</code>, will return empty table.
+
+    </ul>
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">object</span>
+            <span class="types"><span class="type">Player/Entity</span></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">table</span></span>
+        result - A table that contains all buffs</li>
+        <li>
+           <span class="types"><span class="type">var</span></span>
+
+<p> errorCode</p>
+
+<ul>
+    <li>nil - Everything is fine.</li>
+    <li>0 - You called the function before game called <code>restore</code>, that's why the first argument is an empty table</li>
+    <li>11 - The call failed because the object with the specified index does not exist or has no scripting component</li>
+    <li>12 - The call failed because it came from another sector than the object is in</li>
+    <li>13 - The call failed because the given script was not found in the object</li>
+    <li>14 - The call failed because the given function was not found in the script</li>
+    <li>15 - The call failed because the script's state has errors and is invalid</li>
+</ul>
+</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "isReady"></a>
+    <strong>isReady (object)</strong>
+    </dt>
+    <dd>
+    Returns true/false depending on if mod is ready to apply buffs without delaying them (pending)
+
+    <h3 class="ctag_title_Server-side">Server-side:</h3>
+    <ul class="ctag-list_Server-side">
+         This function is only available on the server.
+    </ul>
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">object</span>
+            <span class="types"><span class="type">Player/Entity</span></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">var</span></span>
+
+<p> result</p>
+
+<ul>
+    <li>true - Ready</li>
+    <li>false - Not ready</li>
+    <li>nil - Error, look at the second return value</li>
+</ul>
+</li>
+        <li>
+           <span class="types"><span class="type">int</span></span>
+
+<p> errorCode</p>
+
+<ul>
+    <li>11 - The call failed because the object with the specified index does not exist or has no scripting component</li>
+    <li>12 - The call failed because it came from another sector than the object is in</li>
+    <li>13 - The call failed because the given script was not found in the object</li>
+    <li>14 - The call failed because the given function was not found in the script</li>
+    <li>15 - The call failed because the script's state has errors and is invalid</li>
+</ul>
+</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "removeAbsoluteBias"></a>
+    <strong>removeAbsoluteBias (object, name)</strong>
+    </dt>
+    <dd>
+    Has the same arguments and return values as the removeBaseMultiplier function but removes AbsoluteBias instead
+
+    <h3 class="ctag_title_Server-side">Server-side:</h3>
+    <ul class="ctag-list_Server-side">
+         This function is only available on the server.
+    </ul>
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">object</span>
+            <span class="types"><span class="type">Player/Entity</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">name</span>
+            <span class="types"><span class="type">string</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "removeBaseMultiplier"></a>
+    <strong>removeBaseMultiplier (object, name)</strong>
+    </dt>
+    <dd>
+    Removes Base Multiplier from a specified object
+
+    <h3 class="ctag_title_Server-side">Server-side:</h3>
+    <ul class="ctag-list_Server-side">
+         This function is only available on the server.
+    </ul>
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">object</span>
+            <span class="types"><span class="type">Player/Entity</span></span>
+         — Buff target
+        </li>
+        <li><span class="parameter">name</span>
+            <span class="types"><span class="type">string</span></span>
+         — Buff name
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">var</span></span>
+
+<p> result</p>
+
+<ul>
+    <li>true - Successfully removed</li>
+    <li>false - Buff doesn't exist</li>
+    <li>nil - Error, look at the second return value</li>
+</ul>
+</li>
+        <li>
+           <span class="types"><span class="type">int</span></span>
+
+<p> errorCode</p>
+
+<ul>
+    <li>0 - You tried to remove buff before game called <code>restore</code> function. Your request will be processed later and you will not be able to get return values</li>
+    <li>1 - Names can't contain '.'</li>
+    <li>11 - The call failed because the object with the specified index does not exist or has no scripting component</li>
+    <li>12 - The call failed because it came from another sector than the object is in</li>
+    <li>13 - The call failed because the given script was not found in the object</li>
+    <li>14 - The call failed because the given function was not found in the script</li>
+    <li>15 - The call failed because the script's state has errors and is invalid</li>
+</ul>
+</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "removeBuff"></a>
+    <strong>removeBuff (object, name)</strong>
+    </dt>
+    <dd>
+    Removes a complex buff from a specified object
+
+    <h3 class="ctag_title_Server-side">Server-side:</h3>
+    <ul class="ctag-list_Server-side">
+         This function is only available on the server.
+    </ul>
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">object</span>
+            <span class="types"><span class="type">Player/Entity</span></span>
+         — Buff target
+        </li>
+        <li><span class="parameter">name</span>
+            <span class="types"><span class="type">string</span></span>
+         — Buff name
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">var</span></span>
+
+<p> result</p>
+
+<ul>
+    <li>true - Successfully removed</li>
+    <li>false - Buff doesn't exist</li>
+    <li>nil - Error, look at the second return value</li>
+</ul>
+</li>
+        <li>
+           <span class="types"><span class="type">int</span></span>
+
+<p> errorCode</p>
+
+<ul>
+    <li>0 - You tried to remove buff before game called <code>restore</code> function. Your request will be processed later and you will not be able to get return values</li>
+    <li>1 - Names can't contain '.'</li>
+    <li>11 - The call failed because the object with the specified index does not exist or has no scripting component</li>
+    <li>12 - The call failed because it came from another sector than the object is in</li>
+    <li>13 - The call failed because the given script was not found in the object</li>
+    <li>14 - The call failed because the given function was not found in the script</li>
+    <li>15 - The call failed because the script's state has errors and is invalid</li>
+</ul>
+</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "removeBuffWithType"></a>
+    <strong>removeBuffWithType (object, name, buffType)</strong>
+    </dt>
+    <dd>
+    Removes a buff of a certain type from a specified object
+
+    <h3 class="ctag_title_Server-side">Server-side:</h3>
+    <ul class="ctag-list_Server-side">
+         This function is only available on the server.
+    </ul>
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">object</span>
+            <span class="types"><span class="type">Player/Entity</span></span>
+         — Buff target
+        </li>
+        <li><span class="parameter">name</span>
+            <span class="types"><span class="type">string</span></span>
+         — Buff name
+        </li>
+        <li><span class="parameter">buffType</span>
+            <span class="types"><a class="type" href="BuffsHelper.html#Type">Type</a></span>
+         — Buff type
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">var</span></span>
+
+<p> result</p>
+
+<ul>
+    <li>true - Successfully removed</li>
+    <li>false - Buff doesn't exist</li>
+    <li>nil - Error, look at the second return value</li>
+</ul>
+</li>
+        <li>
+           <span class="types"><span class="type">int</span></span>
+
+<p> errorCode</p>
+
+<ul>
+    <li>0 - You tried to remove buff before game called <code>restore</code> function. Your request will be processed later and you will not be able to get return values</li>
+    <li>1 - Names can't contain '.'</li>
+    <li>11 - The call failed because the object with the specified index does not exist or has no scripting component</li>
+    <li>12 - The call failed because it came from another sector than the object is in</li>
+    <li>13 - The call failed because the given script was not found in the object</li>
+    <li>14 - The call failed because the given function was not found in the script</li>
+    <li>15 - The call failed because the script's state has errors and is invalid</li>
+</ul>
+</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "removeMultiplier"></a>
+    <strong>removeMultiplier (object, name)</strong>
+    </dt>
+    <dd>
+    Has the same arguments and return values as the removeBaseMultiplier function but removes Multiplier instead
+
+    <h3 class="ctag_title_Server-side">Server-side:</h3>
+    <ul class="ctag-list_Server-side">
+         This function is only available on the server.
+    </ul>
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">object</span>
+            <span class="types"><span class="type">Player/Entity</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">name</span>
+            <span class="types"><span class="type">string</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "removeMultiplyableBias"></a>
+    <strong>removeMultiplyableBias (object, name)</strong>
+    </dt>
+    <dd>
+    Has the same arguments and return values as the removeBaseMultiplier function but removes MultiplyableBias instead
+
+    <h3 class="ctag_title_Server-side">Server-side:</h3>
+    <ul class="ctag-list_Server-side">
+         This function is only available on the server.
+    </ul>
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">object</span>
+            <span class="types"><span class="type">Player/Entity</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">name</span>
+            <span class="types"><span class="type">string</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Callbacks"></a>Callbacks</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "onBuffApplied"></a>
+    <strong>onBuffApplied</strong>
+    </dt>
+    <dd>
+    Fires after a buff of any kind was applied.
+
+    <h3 class="ctag_title_Server-side">Server-side:</h3>
+    <ul class="ctag-list_Server-side">
+         This function is only available on the server.
+    </ul>
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">objectIndex</span>
+            <span class="types"><span class="type">Player/Entity</span></span>
+         — Player or Entity index, depends on which object you registered a callback
+        </li>
+        <li><span class="parameter">buffType</span>
+            <span class="types"><a class="type" href="BuffsHelper.html#Type">Type</a></span>
+         — Buff type from the 'BuffsHelper.Type' enum
+        </li>
+        <li><span class="parameter">applyMode</span>
+            <span class="types"><a class="type" href="BuffsHelper.html#Mode">Mode</a></span>
+         — Apply mode from 'BuffsHelper.Mode' enum
+        </li>
+        <li><span class="parameter">buff</span>
+            <span class="types"><span class="type">table</span></span>
+         — The buff itself
+        </li>
+        <li><span class="parameter">previous</span>
+            <span class="types"><span class="type">table</span></span>
+         — Old values of changed args (like duration or color). If it's nil, it means that it's a new buff (so basically everything in the 'buff' table was 'changed')
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">object:registerCallback(<span class="string">"onBuffApplied"</span>, <span class="string">"yourHandlerFunctionName"</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "onBuffRemoved"></a>
+    <strong>onBuffRemoved</strong>
+    </dt>
+    <dd>
+    Fires after a buff was removed (via script or via natural duration decay).
+
+    <h3 class="ctag_title_Server-side">Server-side:</h3>
+    <ul class="ctag-list_Server-side">
+         This function is only available on the server.
+    </ul>
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">objectIndex</span>
+            <span class="types"><span class="type">Player/Entity</span></span>
+         — Player or Entity index, depends on which object you registered a callback
+        </li>
+        <li><span class="parameter">buffType</span>
+            <span class="types"><a class="type" href="BuffsHelper.html#Type">Type</a></span>
+         — Buff type from the 'BuffsHelper.Type' enum
+        </li>
+        <li><span class="parameter">buff</span>
+            <span class="types"><span class="type">table</span></span>
+         — The buff itself
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">object:registerCallback(<span class="string">"onBuffRemoved"</span>, <span class="string">"yourHandlerFunctionName"</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "onBuffsReady"></a>
+    <strong>onBuffsReady</strong>
+    </dt>
+    <dd>
+    Fires after 'restore' signalizing that mod is ready to process requests without delays.
+
+    <h3 class="ctag_title_Server-side">Server-side:</h3>
+    <ul class="ctag-list_Server-side">
+         This function is only available on the server.
+    </ul>
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">objectIndex</span>
+            <span class="types"><span class="type">Player/Entity</span></span>
+         — Player or Entity index, depends on which object you registered a callback
+        </li>
+        <li><span class="parameter">buffs</span>
+            <span class="types"><span class="type">table</span></span>
+         — Contains all previously stored buffs and pending buffs that were just applied
+        </li>
+        <li><span class="parameter">isFirstLaunch</span>
+            <span class="types"><span class="type">boolean</span></span>
+         — If true, the mod was just added to an object
+        </li>
+        <li><span class="parameter">isLate</span>
+            <span class="types"><span class="type">boolean</span></span>
+         — If true, you added this callback a bit too late and missed an actual 'restore' (or the buffs script was just added and didnt't have any stored data)
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">object:registerCallback(<span class="string">"onBuffsReady"</span>, <span class="string">"yourHandlerFunctionName"</span>)</pre>
+    </ul>
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Local_Functions"></a>Local Functions</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "addScript"></a>
+    <strong>addScript</strong>
+    </dt>
+    <dd>
+    Adds custom script effect for client and server. </p>
+
+<p> Custom scripts are attached to an entity or player.
+ They can have callbacks or affect their object over time (update function) but they also consume more CPU and RAM.
+
+    </ul>
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">enumName</span>
+            <span class="types"><span class="type">string</span></span>
+         — A name to be used as 'BuffsHelper.Scripts.EnumName'
+        </li>
+        <li><span class="parameter">displayName</span>
+            <span class="types"><span class="type">string</span></span>
+         — A name that will be translated and displayed in a tooltip.
+        </li>
+        <li><span class="parameter">scriptName</span>
+            <span class="types"><span class="type">string</span></span>
+         <em>(optional)</em> — A script name without path and '.lua'. File should be in the "data/scripts/entity/buffs/" folder. If nil, this custom script cannot be attached to an entity.
+        </li>
+        <li><span class="parameter">playerScriptName</span>
+            <span class="types"><span class="type">string</span></span>
+         <em>(optional)</em> — A script name without path and '.lua'. File should be in the "data/scripts/player/buffs/" folder. If nil, this custom script cannot be attached to a player.
+        </li>
+        <li><span class="parameter">tooltipFunc</span>
+            <span class="types"><span class="type">function</span></span>
+         <em>(optional)</em> — Function that returns tooltip string with bonus value
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">addScript(<span class="string">"Perception"</span>, <span class="string">"Perception"</span>%_t, <span class="string">"perceptionship"</span>, <span class="string">"perceptionplayer"</span>,
+  <span class="keyword">function</span>(isPlayer, factor) <span class="keyword">return</span> formatScriptFactor(factor) <span class="keyword">end</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "addStat"></a>
+    <strong>addStat</strong>
+    </dt>
+    <dd>
+    Adds custom stat effect for client and server. </p>
+
+<p> Custom stats do something when applied and when their buff ends/removed.
+ They don't attach a script to an object so they can't have callbacks/update functions but they are more performance-friendly.
+ Also they can be displayed in the ship buffs tab.
+
+    </ul>
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">enumName</span>
+            <span class="types"><span class="type">string</span></span>
+         — A name to be used as 'BuffsHelper.Stats.EnumName'
+        </li>
+        <li><span class="parameter">displayName</span>
+            <span class="types"><span class="type">string</span></span>
+         — A name that will be translated and displayed in a tooltip.
+        </li>
+        <li><span class="parameter">onApply</span>
+            <span class="types"><span class="type">function</span></span>
+        (Player player, Entity entity, var.. customArgs) — A function that will be executed when a buff will be applied
+        </li>
+        <li><span class="parameter">onRemove</span>
+            <span class="types"><span class="type">function</span></span>
+        (Player player, Entity entity, var.. customArgs) — A function that will be executed when a buff will be removed (via script or via natural decay)
+        </li>
+        <li><span class="parameter">tooltipFunc</span>
+            <span class="types"><span class="type">function</span></span>
+         <em>(optional)</em> — Function that returns tooltip string with bonus value
+        </li>
+        <li><span class="parameter">showInStats</span>
+            <span class="types"><a class="type" href="BuffsHelper.html#Target">Target</a></span>
+         <em>(optional)</em> — Determines if a stat should be shown in the Player/Ship window Buffs tab or both; 'nil' = 'don't show' (default: nil)
+        </li>
+        <li><span class="parameter">statsFunc</span>
+            <span class="types"><span class="type">function</span></span>
+         <em>(optional)</em> — If defined, buff will be shown in the ship/player stats window
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">addStat(<span class="string">"Perception"</span>, <span class="string">"Perception"</span>%_t,
+  <span class="keyword">function</span>(player, entity, value) <span class="keyword">if</span> entity <span class="keyword">then</span> addStatEntity() <span class="keyword">else</span> addStatPlayer() <span class="keyword">end</span> <span class="keyword">end</span>,
+  <span class="keyword">function</span>(player, entity, value) <span class="keyword">if</span> entity <span class="keyword">then</span> removeStatEntity() <span class="keyword">else</span> removeStatPlayer() <span class="keyword">end</span> <span class="keyword">end</span>,
+  <span class="keyword">function</span>(isPlayer, factor) <span class="keyword">return</span> formatStatFactor(factor) <span class="keyword">end</span>,
+  BuffsHelper.Target.Both,
+  <span class="keyword">function</span>(player, entity)
+      <span class="keyword">if</span> entity <span class="keyword">then</span>
+          <span class="keyword">return</span> getBaseEntityStat(), getFinalEntityStat()
+      <span class="keyword">else</span>
+          <span class="keyword">return</span> getBasePlayerStat(), getFinalPlayerStat()
+      <span class="keyword">end</span>
+  <span class="keyword">end</span>)</pre>
+    </ul>
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Built_in_Custom_Stats"></a>Built-in Custom Stats</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "ChangeValue"></a>
+    <strong>ChangeValue</strong>
+    </dt>
+    <dd>
+    Allows to increase/decrease object values via 'setValue'/'getValue'.
+
+    </ul>
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">name</span>
+            <span class="types"><span class="type">string</span></span>
+         — Variable name
+        </li>
+        <li><span class="parameter">value</span>
+            <span class="types"><span class="type">float</span></span>
+         — Variable numeric value
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <li><pre class="example">BuffsHelper.Stats.ChangeValue:New(<span class="string">"scan_level"</span>, <span class="number">4</span>)</pre></li>
+        <li><pre class="example">BuffsHelper.Stats.ChangeValue:NewTarget(BuffsHelper.Target.Player, <span class="string">"scan_level"</span>, <span class="number">2</span>)</pre></li>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "DamageMultiplier"></a>
+    <strong>DamageMultiplier</strong>
+    </dt>
+    <dd>
+    Increases/decreases all incoming damage. </p>
+
+<p> Can be applied to a player, but will do nothing.
+
+    </ul>
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">factor</span>
+            <span class="types"><span class="type">float</span></span>
+         — Extra damage factor (0.2 = +20%)
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <li><pre class="example">BuffsHelper.Stats.DamageMultiplier:New(<span class="number">0.2</span>)</pre></li>
+        <li><pre class="example">BuffsHelper.Stats.DamageMultiplier:NewTarget(BuffsHelper.Target.Entity, <span class="number">0.15</span>)</pre></li>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "HullDurability"></a>
+    <strong>HullDurability</strong>
+    </dt>
+    <dd>
+    Increases/decreases hull durability multiplier. </p>
+
+<p> Can be applied to a player, but will do nothing.
+
+    </ul>
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">factor</span>
+            <span class="types"><span class="type">float</span></span>
+         — Extra hull durability factor (0.2 = +20%)
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <li><pre class="example">BuffsHelper.Stats.HullDurability:New(<span class="number">0.2</span>)</pre></li>
+        <li><pre class="example">BuffsHelper.Stats.HullDurability:NewTarget(BuffsHelper.Target.Entity, <span class="number">0.15</span>)</pre></li>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "SetValue"></a>
+    <strong>SetValue</strong>
+    </dt>
+    <dd>
+    Allows to set object values via 'setValue'/'getValue'.
+
+    </ul>
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">name</span>
+            <span class="types"><span class="type">string</span></span>
+         — Variable name
+        </li>
+        <li><span class="parameter">value</span>
+            <span class="types"><span class="type">var</span></span>
+         — Variable value
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <li><pre class="example">BuffsHelper.Stats.SetValue:New(<span class="string">"hidden_name"</span>, <span class="string">"Bob"</span>)</pre></li>
+        <li><pre class="example">BuffsHelper.Stats.SetValue:NewTarget(BuffsHelper.Target.Both, <span class="string">"hidden_name"</span>, <span class="string">"Bob"</span>)</pre></li>
+    </ul>
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Built_in_Custom_Scripts"></a>Built-in Custom Scripts</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "ChangeDurability"></a>
+    <strong>ChangeDurability</strong>
+    </dt>
+    <dd>
+    Changes hull durability by 'amount' every 'frequency' seconds. </p>
+
+<p> Can be applied to a player, but will do nothing.
+
+    </ul>
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">amount</span>
+            <span class="types"><span class="type">int</span></span>
+         — Hull change amount
+        </li>
+        <li><span class="parameter">frequency</span>
+            <span class="types"><span class="type">float</span></span>
+         — Time interval, should be positive
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <li><pre class="example">BuffsHelper.Stats.ChangeDurability:New(<span class="number">10</span>, <span class="number">5</span>)</pre></li>
+        <li><pre class="example">BuffsHelper.Stats.ChangeDurability:NewTarget(BuffsHelper.Target.Entity, <span class="number">20</span>, <span class="number">4</span>)</pre></li>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ChangeShield"></a>
+    <strong>ChangeShield</strong>
+    </dt>
+    <dd>
+    Changes shield durability by 'amount' every 'frequency' seconds. </p>
+
+<p> Can be applied to a player, but will do nothing.
+
+    </ul>
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">amount</span>
+            <span class="types"><span class="type">int</span></span>
+         — Shield change amount
+        </li>
+        <li><span class="parameter">frequency</span>
+            <span class="types"><span class="type">float</span></span>
+         — Time interval, should be positive
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <li><pre class="example">BuffsHelper.Stats.ChangeShield:New(<span class="number">10</span>, <span class="number">5</span>)</pre></li>
+        <li><pre class="example">BuffsHelper.Stats.ChangeShield:NewTarget(BuffsHelper.Target.Entity, <span class="number">20</span>, <span class="number">4</span>)</pre></li>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "CollisionDamage"></a>
+    <strong>CollisionDamage</strong>
+    </dt>
+    <dd>
+    Inflicts extra damage to other ship on collision. </p>
+
+<p> Can be applied to a player, but will do nothing.
+
+    </ul>
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">amount</span>
+            <span class="types"><span class="type">float</span></span>
+         — Collision damage amount
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <li><pre class="example">BuffsHelper.Stats.CollisionDamage:New(<span class="number">4</span>)</pre></li>
+        <li><pre class="example">BuffsHelper.Stats.CollisionDamage:NewTarget(BuffsHelper.Target.Both, <span class="number">5</span>)</pre></li>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "DestroyCargo"></a>
+    <strong>DestroyCargo</strong>
+    </dt>
+    <dd>
+    Destroys random cargo 'volume' every 'frequency' seconds. </p>
+
+<p> Can be applied to a player, but will do nothing.
+
+    </ul>
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">volume</span>
+            <span class="types"><span class="type">float</span></span>
+         — Cargo volume to destroy, should be positive
+        </li>
+        <li><span class="parameter">frequency</span>
+            <span class="types"><span class="type">float</span></span>
+         — Time interval, should be positive
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <li><pre class="example">BuffsHelper.Stats.DestroyCargo:New(<span class="number">10</span>, <span class="number">5</span>)</pre></li>
+        <li><pre class="example">BuffsHelper.Stats.DestroyCargo:NewTarget(BuffsHelper.Target.Both, <span class="number">20</span>, <span class="number">4</span>)</pre></li>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "KillCrew"></a>
+    <strong>KillCrew</strong>
+    </dt>
+    <dd>
+    Kills 'amount' random crew members every 'frequency' seconds. </p>
+
+<p> Can be applied to a player, but will do nothing.
+
+    </ul>
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">amount</span>
+            <span class="types"><span class="type">int</span></span>
+         — Crew amount to kill, should be positive
+        </li>
+        <li><span class="parameter">frequency</span>
+            <span class="types"><span class="type">float</span></span>
+         — Time interval, should be positive
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <li><pre class="example">BuffsHelper.Stats.KillCrew:New(<span class="number">10</span>, <span class="number">5</span>)</pre></li>
+        <li><pre class="example">BuffsHelper.Stats.KillCrew:NewTarget(BuffsHelper.Target.Entity, <span class="number">20</span>, <span class="number">4</span>)</pre></li>
+    </ul>
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Enums"></a>Enums</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "Mode"></a>
+    <strong>Mode</strong>
+    </dt>
+    <dd>
+    Buff apply mode.
+
+    </ul>
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">Add</span>
+        Add if doesn't exist
+        </li>
+        <li><span class="parameter">AddOrRefresh</span>
+        Refresh duration or add if doesn't exist
+        </li>
+        <li><span class="parameter">AddOrCombine</span>
+        Combine duration or add if doesn't exist
+        </li>
+        <li><span class="parameter">Refresh</span>
+        Refresh duration, don't add if doesn't exist
+        </li>
+        <li><span class="parameter">Combine</span>
+        Combine duration, don't add if doesn't exist
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Target"></a>
+    <strong>Target</strong>
+    </dt>
+    <dd>
+    Buff target.
+ This is used only for Player-buffs. It defines which target should a buff affect and if it should spread to an entity.</p>
+
+<p> StatsBonuses (vanilla bonuses) always have Target.Entity, which means that they don't do anything for player, but spread to the currently piloted ship BuffsHelper.Scripts and BuffsHelper.Stats can have various Target values.
+
+    </ul>
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">Entity</span>
+        Doesn't affect player, but spreads to a currently piloted entity
+        </li>
+        <li><span class="parameter">Player</span>
+        Doesn't spread to an entity, just stays on a player and affects them
+        </li>
+        <li><span class="parameter">Both</span>
+        Affects player, spreads to an entity and affects it too (maybe in a different way)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Type"></a>
+    <strong>Type</strong>
+    </dt>
+    <dd>
+    Buff type.
+ StatBonuses are calculated using the following formula:</p>
+
+<p> resultingValue = (baseValue × BaseMultiplier + MultiplyableBias) × Multiplier + AbsoluteBias
+
+    </ul>
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">BaseMultiplier</span>
+        Multiplyer for stat of type type. This is to increase a stat, so a factor of 0.3 will become 1.3
+        </li>
+        <li><span class="parameter">Multiplier</span>
+        Multiplyer for stat of type type. The factor will be used unchanged
+        </li>
+        <li><span class="parameter">MultiplyableBias</span>
+        Bias for stat of type type. This bias will be added to stat before multipliers are considered
+        </li>
+        <li><span class="parameter">AbsoluteBias</span>
+        Flat bias for stat of type type. This bias will be added to stat after multipliers are considered
+        </li>
+        <li><span class="parameter">Buff</span>
+        Complex buff with multiple bonuses or custom stats/scripts
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2020-03-21 03:54:43 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

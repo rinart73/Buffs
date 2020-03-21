@@ -1,50 +1,45 @@
-# ========== data\scripts\entity\buffs.lua ==========
-#: data\scripts\entity\buffs.lua:
+# ========== data\scripts\lib\BuffsHelper.lua ==========
+#: data\scripts\lib\BuffsHelper.lua:
 msgid "Material Scanner Range"
 msgstr ""
 
-#: data\scripts\entity\buffs.lua:
+#: data\scripts\lib\BuffsHelper.lua:
 msgid "Time Until Recharge (Depletion)"
 msgstr ""
 
-#: data\scripts\entity\buffs.lua:
+#: data\scripts\lib\BuffsHelper.lua:
 msgid "Pilots Per Fighter"
 msgstr ""
 
-#: data\scripts\entity\buffs.lua:
+#: data\scripts\lib\BuffsHelper.lua:
 msgid "Miners Per Turret"
 msgstr ""
 
-#: data\scripts\entity\buffs.lua:
+#: data\scripts\lib\BuffsHelper.lua:
 msgid "Gunners Per Turret"
 msgstr ""
 
-#: data\scripts\entity\buffs.lua:
+#: data\scripts\lib\BuffsHelper.lua:
 msgid "Mechanics Per Turret"
 msgstr ""
 
-#: data\scripts\entity\buffs.lua:
-msgid "Craft Stats"
+#: data\scripts\lib\BuffsHelper.lua:
+msgid "${days}d ${hours}h"
 msgstr ""
 
-#: data\scripts\entity\buffs.lua:
-msgid "Stat"
+#: data\scripts\lib\BuffsHelper.lua:
+msgid "${hours}h ${minutes}m"
 msgstr ""
 
-#: data\scripts\entity\buffs.lua:
-msgid "Base value"
+#: data\scripts\lib\BuffsHelper.lua:
+msgid "${minutes}m ${seconds}s"
 msgstr ""
 
-#: data\scripts\entity\buffs.lua:
-msgid "Result"
-msgstr ""
-
-#: data\scripts\entity\buffs.lua:
+#: data\scripts\lib\BuffsHelper.lua:
+#: data\scripts\player\buffs.lua:
 msgid "Permanent"
 msgstr ""
 
-
-# ========== data\scripts\lib\BuffsHelper.lua ==========
 #: data\scripts\lib\BuffsHelper.lua:
 msgid "Cargo Destruction"
 msgstr ""
@@ -58,9 +53,33 @@ msgid "Crew Dies"
 msgstr ""
 
 
-# ========== data\scripts\lib\BuffsIntegration.lua ==========
-#: data\scripts\lib\BuffsIntegration.lua:
-msgid "High concentration of dust particles prevents\nyour ship sensors from functioning properly.\nWait until sensor recalibration is finished."
+# ========== data\scripts\player\buffs.lua ==========
+#: data\scripts\player\buffs.lua:
+msgid "Buffs & Stats"
+msgstr ""
+
+#: data\scripts\player\buffs.lua:
+msgid "Buffs & Stats"
+msgstr ""
+
+#: data\scripts\player\buffs.lua:
+msgid "Stat"
+msgstr ""
+
+#: data\scripts\player\buffs.lua:
+msgid "Base value"
+msgstr ""
+
+#: data\scripts\player\buffs.lua:
+msgid "Result"
+msgstr ""
+
+#: data\scripts\player\buffs.lua:
+msgid "Hide buffs icons overlay"
+msgstr ""
+
+#: data\scripts\player\buffs.lua:
+msgid "Duration"
 msgstr ""
 
 

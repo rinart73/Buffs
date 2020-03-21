@@ -30,7 +30,7 @@ function KillCrewBuff.getUpdateInterval()
     return data and data.frequency or 1
 end
 
-function KillCrewBuff.update()
+function KillCrewBuff.updateParallelSelf()
     if not data then return end -- we CAN'T terminate buffs even if arguments are wrong - this will mess up other scripts!
     local entity = Entity()
     if not entity.crew then return end

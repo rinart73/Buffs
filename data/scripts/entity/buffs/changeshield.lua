@@ -29,7 +29,7 @@ function ChangeShieldBuff.getUpdateInterval()
     return data and data.frequency or 1
 end
 
-function ChangeShieldBuff.update()
+function ChangeShieldBuff.updateParallelSelf()
     if not data then return end -- we CAN'T terminate buffs even if arguments are wrong - this will mess up other scripts!
     
     local entity = Entity()
